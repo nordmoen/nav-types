@@ -45,11 +45,14 @@ impl<N: Float> WGS84<N> {
     /// WGS84 ellipsoid.
     pub fn new(latitude: N, longitude: N, altitude: N) -> WGS84<N> {
         assert!(latitude.abs() <= N::from(90.0).unwrap(),
-            "Latitude must be in the range [-90, 90]");
+                "Latitude must be in the range [-90, 90]");
         assert!(longitude.abs() <= N::from(180.0).unwrap(),
-            "Longitude must be in the range [-180, 180]");
-        WGS84{lat:latitude.to_radians(), lon:longitude.to_radians(),
-            alt:altitude}
+                "Longitude must be in the range [-180, 180]");
+        WGS84 {
+            lat: latitude.to_radians(),
+            lon: longitude.to_radians(),
+            alt: altitude,
+        }
     }
 
     /// Try to create a new WGS84 position
@@ -59,14 +62,13 @@ impl<N: Float> WGS84<N> {
     /// - `longitude` in degrees
     /// - `altitude` in meters
     pub fn try_new(latitude: N, longitude: N, altitude: N) -> Option<WGS84<N>> {
-        if latitude.abs() <= N::from(90.0).unwrap()
-            && longitude.abs() <= N::from(180.0).unwrap() {
+        if latitude.abs() <= N::from(90.0).unwrap() && longitude.abs() <= N::from(180.0).unwrap() {
             Some(WGS84::new(latitude, longitude, altitude))
         } else {
             None
         }
     }
-    
+
     /// Get latitude of position, in degrees
     pub fn latitude_degrees(&self) -> N {
         self.lat.to_degrees()
@@ -97,13 +99,12 @@ impl<N: Float> WGS84<N> {
         let delta_lat = other.latitude() - self.latitude();
         let delta_lon = other.longitude() - self.longitude();
 
-        let a = (delta_lat / N::from(2.0).unwrap()).sin().powi(2)
-            + self.latitude().cos() * other.latitude().cos()
-            * (delta_lon / N::from(2.0).unwrap()).sin().powi(2);
+        let a = (delta_lat / N::from(2.0).unwrap()).sin().powi(2) +
+                self.latitude().cos() * other.latitude().cos() *
+                (delta_lon / N::from(2.0).unwrap()).sin().powi(2);
         let c = N::from(2.0).unwrap() * a.sqrt().asin();
 
-        N::from(SEMI_MAJOR_AXIS).unwrap() * c
-            + (self.altitude() - other.altitude()).abs()
+        N::from(SEMI_MAJOR_AXIS).unwrap() * c + (self.altitude() - other.altitude()).abs()
     }
 }
 
@@ -171,7 +172,7 @@ impl<N: Float> From<NVector<N>> for WGS84<N> {
         let x = f.vector().z;
         let y = f.vector().y;
         let z = -f.vector().x;
-        
+
         // See equation (5) in Gade(2010)
         let longitude = y.atan2(-z);
         // Equatorial component, see equation (6) Gade(2010)
@@ -179,14 +180,24 @@ impl<N: Float> From<NVector<N>> for WGS84<N> {
         // See equation (6) Gade(2010)
         let latitude = x.atan2(equat);
 
-        WGS84{lat: latitude, lon: longitude, alt: f.altitude()}
+        WGS84 {
+            lat: latitude,
+            lon: longitude,
+            alt: f.altitude(),
+        }
     }
 }
 
 impl<N: Float> From<ECEF<N>> for WGS84<N> {
     fn from(f: ECEF<N>) -> WGS84<N> {
         // Conversion from:
-        // http://download.springer.com/static/pdf/723/art%253A10.1007%252Fs00190-004-0375-4.pdf?originUrl=http%3A%2F%2Flink.springer.com%2Farticle%2F10.1007%2Fs00190-004-0375-4&token2=exp=1470729285~acl=%2Fstatic%2Fpdf%2F723%2Fart%25253A10.1007%25252Fs00190-004-0375-4.pdf%3ForiginUrl%3Dhttp%253A%252F%252Flink.springer.com%252Farticle%252F10.1007%252Fs00190-004-0375-4*~hmac=4aaedb6b71f13fc9a9ce5175b4538c3ec38ddf11b77531d3bd2af75ee1fc2061
+        // http://download.springer.com/static/pdf/723/art%253A10.1007%252Fs00190-004-0375-4
+        // .pdf?originUrl=http%3A%2F%2Flink.springer.com%2Farticle%2F10.1007%2Fs00190-004-0375-4&
+        // token
+        // 2=exp=1470729285~acl=%2Fstatic%2Fpdf%2F723%2Fart%25253A10.1007%25252Fs00190-004-0375-4.
+        // pdf%
+        // 3ForiginUrl%3Dhttp%253A%252F%252Flink.springer.com%252Farticle%252F10.1007%252Fs00190-
+        // 004-0375-4*~hmac=4aaedb6b71f13fc9a9ce5175b4538c3ec38ddf11b77531d3bd2af75ee1fc2061
         //
         // These are often used constants below:
         // a²
@@ -200,32 +211,29 @@ impl<N: Float> From<ECEF<N>> for WGS84<N> {
         let q = ((N::one() - e_2) / a_sq) * f.z().powi(2);
         let r = (p + q - e_4) / N::from(6.0).unwrap();
         let s = e_4 * ((p * q) / (N::from(4.0).unwrap() * r.powi(3)));
-        let t = (N::one() + s +
-                 (s * (N::from(2.0).unwrap() + s)).sqrt())
-            .cbrt();
+        let t = (N::one() + s + (s * (N::from(2.0).unwrap() + s)).sqrt()).cbrt();
         let u = r * (N::one() + t + t.recip());
         let v = (u.powi(2) + e_4 * q).sqrt();
         let w = e_2 * ((u + v - q) / (N::from(2.0).unwrap() * v));
         let k = (u + v + w.powi(2)).sqrt() - w;
-        let d = (k * (f.x().powi(2) + f.y().powi(2)).sqrt())
-            / (k + e_2);
+        let d = (k * (f.x().powi(2) + f.y().powi(2)).sqrt()) / (k + e_2);
         let pi_half = N::from(FRAC_PI_2).unwrap();
 
-        let altitude = ((k + e_2 - N::one()) / k)
-            * (d.powi(2) + f.z().powi(2)).sqrt();
-        let latitude = N::from(2.0).unwrap()
-            * f.z().atan2(d + (d.powi(2) + f.z().powi(2)).sqrt());
+        let altitude = ((k + e_2 - N::one()) / k) * (d.powi(2) + f.z().powi(2)).sqrt();
+        let latitude = N::from(2.0).unwrap() * f.z().atan2(d + (d.powi(2) + f.z().powi(2)).sqrt());
         let longitude = if f.y() >= N::zero() {
-            pi_half
-                - N::from(2.0).unwrap()
-                * f.x().atan2((f.x().powi(2) + f.y().powi(2)).sqrt() + f.y())
+            pi_half -
+            N::from(2.0).unwrap() * f.x().atan2((f.x().powi(2) + f.y().powi(2)).sqrt() + f.y())
         } else {
-            - pi_half
-                + N::from(2.0).unwrap()
-                * f.x().atan2((f.x().powi(2) + f.y().powi(2)).sqrt() - f.y())
+            -pi_half +
+            N::from(2.0).unwrap() * f.x().atan2((f.x().powi(2) + f.y().powi(2)).sqrt() - f.y())
         };
 
-        WGS84{lat: latitude, lon: longitude, alt: altitude}
+        WGS84 {
+            lat: latitude,
+            lon: longitude,
+            alt: altitude,
+        }
     }
 }
 

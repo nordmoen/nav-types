@@ -1,8 +1,7 @@
 use ::Access;
 use ::ned::NED;
-use na::{Vector3, Norm, BaseFloat};
-use std::ops::{Add, AddAssign, Sub, SubAssign, Mul, MulAssign, Div, DivAssign,
-    Neg};
+use na::{BaseFloat, Norm, Vector3};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
 /// East North Up vector
 ///
@@ -36,13 +35,13 @@ impl<N: Copy> ENU<N> {
     }
 }
 
-impl<N: Copy + Neg<Output=N>> From<NED<N>> for ENU<N> {
+impl<N: Copy + Neg<Output = N>> From<NED<N>> for ENU<N> {
     fn from(n: NED<N>) -> ENU<N> {
         ENU::new(n.east(), n.north(), -n.down())
     }
 }
 
-impl<N: Copy + Add<N, Output=N>> Add<ENU<N>> for ENU<N> {
+impl<N: Copy + Add<N, Output = N>> Add<ENU<N>> for ENU<N> {
     type Output = ENU<N>;
     fn add(self, right: ENU<N>) -> ENU<N> {
         ENU(self.0 + right.0)
@@ -55,7 +54,7 @@ impl<N: Copy + AddAssign<N>> AddAssign<ENU<N>> for ENU<N> {
     }
 }
 
-impl<N: Copy + Sub<N, Output=N>> Sub<ENU<N>> for ENU<N> {
+impl<N: Copy + Sub<N, Output = N>> Sub<ENU<N>> for ENU<N> {
     type Output = ENU<N>;
     fn sub(self, right: ENU<N>) -> ENU<N> {
         ENU(self.0 - right.0)
@@ -68,7 +67,7 @@ impl<N: Copy + SubAssign<N>> SubAssign<ENU<N>> for ENU<N> {
     }
 }
 
-impl<N: Copy + Mul<N, Output=N>> Mul<N> for ENU<N> {
+impl<N: Copy + Mul<N, Output = N>> Mul<N> for ENU<N> {
     type Output = ENU<N>;
     fn mul(self, right: N) -> ENU<N> {
         ENU(self.0 * right)
@@ -81,7 +80,7 @@ impl<N: Copy + MulAssign<N>> MulAssign<N> for ENU<N> {
     }
 }
 
-impl<N: Copy + Div<N, Output=N>> Div<N> for ENU<N> {
+impl<N: Copy + Div<N, Output = N>> Div<N> for ENU<N> {
     type Output = ENU<N>;
     fn div(self, right: N) -> Self {
         ENU(self.0 / right)
