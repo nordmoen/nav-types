@@ -1,0 +1,6 @@
+target
+Cargo.lock
+
+# Vim specific:
+*.swp
+*.swo
