@@ -21,7 +21,7 @@ pub const ECCENTRICITY_SQ: f64 = 2.0 * FLATTENING - FLATTENING * FLATTENING;
 ///
 /// This struct represents a position in the geodetic system on the WGS84
 /// ellipsoid.
-/// See: [https://en.wikipedia.org/wiki/World_Geodetic_System](WGS84) for
+/// See: [WGS84](https://en.wikipedia.org/wiki/World_Geodetic_System) for
 /// more information.
 #[derive(PartialEq, Clone, Copy, Debug)]
 pub struct WGS84<N> {

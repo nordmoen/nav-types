@@ -2,7 +2,7 @@
 //!
 //! This crate is intended to allow easy and safe interoperability between
 //! different global position and vectors in different coordinate systems.
-//! The create is built on top of [http://nalgebra.org/doc/nalgebra/](nalgebra)
+//! The create is built on top of [nalgebra](http://nalgebra.org/doc/nalgebra/)
 //! and strives to be compatible with types from that crate.
 //!
 //! # Example

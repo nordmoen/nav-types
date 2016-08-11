@@ -8,7 +8,7 @@ use std::ops::{Add, AddAssign, Sub, SubAssign, Mul, MulAssign, Div, DivAssign,
 /// North East Down vector
 ///
 /// This struct represents a vector in the NED coordinate system.
-/// See: [https://en.wikipedia.org/wiki/North_east_down](NED) for a general
+/// See: [NED](https://en.wikipedia.org/wiki/North_east_down) for a general
 /// description.
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct NED<N>(Vector3<N>);

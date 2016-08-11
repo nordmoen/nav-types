@@ -7,7 +7,7 @@ use std::ops::{Add, AddAssign, Sub, SubAssign, Mul, MulAssign, Div, DivAssign,
 /// East North Up vector
 ///
 /// This struct represents a vector in the ENU coordinate system.
-/// See: [https://en.wikipedia.org/wiki/Axes_conventions](ENU) for a general
+/// See: [ENU](https://en.wikipedia.org/wiki/Axes_conventions) for a general
 /// description.
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct ENU<N>(Vector3<N>);

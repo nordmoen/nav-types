@@ -10,7 +10,7 @@ use std::ops::{Add, AddAssign, Sub, SubAssign};
 /// Earth Centered Earth Fixed position
 ///
 /// This struct represents a position in the ECEF coordinate system.
-/// See: [https://en.wikipedia.org/wiki/ECEF](ECEF) for general description.
+/// See: [ECEF](https://en.wikipedia.org/wiki/ECEF) for general description.
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct ECEF<N>(Point3<N>);
 

@@ -11,7 +11,7 @@ use std::ops::{Add, AddAssign, Sub, SubAssign};
 /// The N-Vector represents unique points on the earth's surface.
 /// The advantage of N-Vectors is that they have no inconsistencies around
 /// the poles compared to WGS84 Latitude, Longitude format.
-/// See: [http://www.navlab.net/nvector/](nvector) for detailed information.
+/// See: [nvector](http://www.navlab.net/nvector/) for detailed information.
 #[derive(PartialEq, Clone, Copy, Debug)]
 pub struct NVector<N> {
     vec: Vector3<N>,
