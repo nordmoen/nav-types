@@ -1,6 +1,6 @@
 use ::ecef::ECEF;
 use ::enu::ENU;
-use ::wgs84::{WGS84, SEMI_MAJOR_AXIS, ECCENTRICITY_SQ};
+use ::wgs84::{ECCENTRICITY_SQ, SEMI_MAJOR_AXIS, WGS84};
 use na::Vector3;
 use num_traits::Float;
 use std::convert::From;
@@ -21,7 +21,10 @@ pub struct NVector<N> {
 impl<N> NVector<N> {
     /// Create a new NVector
     pub fn new(vec: Vector3<N>, altitude: N) -> NVector<N> {
-        NVector{vec: vec, alt: altitude}
+        NVector {
+            vec: vec,
+            alt: altitude,
+        }
     }
 }
 
@@ -90,10 +93,9 @@ impl<N: Float> From<WGS84<N>> for NVector<N> {
         // axes point directly north, this affects the way which N-vectors are
         // defined. See: Table 2 in Gade(2010).
         // NOTE: This is consistent with the ECEF implementation in this crate
-        let vec = Vector3::new(
-            f.longitude().cos() * f.latitude().cos(),
-            f.longitude().sin() * f.latitude().cos(),
-            f.latitude().sin());
+        let vec = Vector3::new(f.longitude().cos() * f.latitude().cos(),
+                               f.longitude().sin() * f.latitude().cos(),
+                               f.latitude().sin());
         NVector::new(vec, f.altitude())
     }
 }
@@ -117,23 +119,18 @@ impl<N: Float> From<ECEF<N>> for NVector<N> {
         let q = ((N::one() - e_2) / a_sq) * x.powi(2);
         let r = (p + q - e_4) / N::from(6.0).unwrap();
         let s = (e_4 * p * q) / (N::from(4.0).unwrap() * r.powi(3));
-        let t = (N::one() + s +
-                 (s * (N::from(2.0).unwrap() + s)).sqrt())
-            .cbrt();
+        let t = (N::one() + s + (s * (N::from(2.0).unwrap() + s)).sqrt()).cbrt();
         let u = r * (N::one() + t + t.recip());
         let v = (u.powi(2) + e_4 * q).sqrt();
         let w = e_2 * ((u + v - q) / (N::from(2.0).unwrap() * v));
         let k = (u + v + w.powi(2)).sqrt() - w;
-        let d = (k * (y.powi(2) + z.powi(2)).sqrt())
-            / (k + e_2);
+        let d = (k * (y.powi(2) + z.powi(2)).sqrt()) / (k + e_2);
 
-        let altitude = ((k + e_2 - N::one()) / k)
-            * (d.powi(2) + x.powi(2)).sqrt();
-        
+        let altitude = ((k + e_2 - N::one()) / k) * (d.powi(2) + x.powi(2)).sqrt();
+
         let denom = (d.powi(2) + x.powi(2)).sqrt().recip();
         let mul = k / (k + e_2);
-        let vec = Vector3::new(-mul * z * denom, mul * y * denom,
-            x * denom);
+        let vec = Vector3::new(-mul * z * denom, mul * y * denom, x * denom);
 
         NVector::new(vec, altitude)
     }
@@ -158,7 +155,7 @@ mod tests {
         fn from_ecef(wgs: WGS84<f64>) -> () {
             let ans = NVector::from(wgs);
             let test = NVector::from(ECEF::from(wgs));
-            
+
             close(ans.altitude(), test.altitude(), 0.000001);
             close(ans.vector().as_ref(), test.vector().as_ref(), 0.000001)
         }

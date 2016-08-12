@@ -1,8 +1,8 @@
 use ::Access;
 use ::enu::ENU;
 use ::nvector::NVector;
-use ::wgs84::{WGS84, SEMI_MAJOR_AXIS, SEMI_MINOR_AXIS, ECCENTRICITY_SQ};
-use na::{Point3, Matrix3, Transpose};
+use ::wgs84::{ECCENTRICITY_SQ, SEMI_MAJOR_AXIS, SEMI_MINOR_AXIS, WGS84};
+use na::{Matrix3, Point3, Transpose};
 use num_traits::Float;
 use std::convert::From;
 use std::ops::{Add, AddAssign, Sub, SubAssign};
@@ -42,14 +42,15 @@ impl<N: Float> ECEF<N> {
     /// Create a rotation matrix from ECEF frame to ENU frame
     fn r_en(self) -> Matrix3<N> {
         let wgs = WGS84::from(self);
-        Matrix3::new(
-            -wgs.longitude().sin(), wgs.longitude().cos(), N::zero(),
-            -wgs.latitude().sin() * wgs.longitude().cos(),
-                -wgs.latitude().sin() * wgs.longitude().sin(),
-                wgs.latitude().cos(),
-            wgs.latitude().cos() * wgs.longitude().cos(),
-                wgs.latitude().cos() * wgs.longitude().sin(),
-                wgs.latitude().sin())
+        Matrix3::new(-wgs.longitude().sin(),
+                     wgs.longitude().cos(),
+                     N::zero(),
+                     -wgs.latitude().sin() * wgs.longitude().cos(),
+                     -wgs.latitude().sin() * wgs.longitude().sin(),
+                     wgs.latitude().cos(),
+                     wgs.latitude().cos() * wgs.longitude().cos(),
+                     wgs.latitude().cos() * wgs.longitude().sin(),
+                     wgs.latitude().sin())
 
     }
 
@@ -101,20 +102,23 @@ impl<N: Float + SubAssign> SubAssign<ENU<N>> for ECEF<N> {
 impl<N: Float> From<WGS84<N>> for ECEF<N> {
     fn from(f: WGS84<N>) -> ECEF<N> {
         // Conversion from:
-        // http://download.springer.com/static/pdf/723/art%253A10.1007%252Fs00190-004-0375-4.pdf?originUrl=http%3A%2F%2Flink.springer.com%2Farticle%2F10.1007%2Fs00190-004-0375-4&token2=exp=1470729285~acl=%2Fstatic%2Fpdf%2F723%2Fart%25253A10.1007%25252Fs00190-004-0375-4.pdf%3ForiginUrl%3Dhttp%253A%252F%252Flink.springer.com%252Farticle%252F10.1007%252Fs00190-004-0375-4*~hmac=4aaedb6b71f13fc9a9ce5175b4538c3ec38ddf11b77531d3bd2af75ee1fc2061
+        // http://download.springer.com/static/pdf/723/art%253A10.1007%252Fs00190-004-0375-4
+        // .pdf?originUrl=http%3A%2F%2Flink.springer.com%2Farticle%2F10.1007%2Fs00190-004
+        // -0375-4&token2=exp=1470729285~acl=%2Fstatic%2Fpdf%2F723%2Fart%25253A10.1007
+        // %25252Fs00190-004-0375-4.pdf%3ForiginUrl%3Dhttp%253A%252F%252Flink.springer.com
+        // %252Farticle%252F10.1007%252Fs00190-004-0375-4*~hmac=4aaedb6b71f13fc9a9ce5175b
+        // 4538c3ec38ddf11b77531d3bd2af75ee1fc2061
         let a = N::from(SEMI_MAJOR_AXIS).unwrap();
         let ecc_part = N::from(ECCENTRICITY_SQ).unwrap();
-        let sin_part = N::from(0.5).unwrap()
-            * (N::from(1.0).unwrap()
-               - (N::from(2.0).unwrap() * f.latitude()).cos());
+        let sin_part = N::from(0.5).unwrap() *
+                       (N::from(1.0).unwrap() - (N::from(2.0).unwrap() * f.latitude()).cos());
 
         let n = a / (N::from(1.0).unwrap() - ecc_part * sin_part).sqrt();
         let h = f.altitude();
 
         let x = (h + n) * f.latitude().cos() * f.longitude().cos();
         let y = (h + n) * f.latitude().cos() * f.longitude().sin();
-        let z = (h + n - N::from(ECCENTRICITY_SQ).unwrap() * n)
-            * f.latitude().sin();
+        let z = (h + n - N::from(ECCENTRICITY_SQ).unwrap() * n) * f.latitude().sin();
 
         ECEF::new(x, y, z)
     }
@@ -126,18 +130,16 @@ impl<N: Float> From<NVector<N>> for ECEF<N> {
         let x = f.vector().z;
         let y = f.vector().y;
         let z = -f.vector().x;
-        let a_over_b = N::from(SEMI_MAJOR_AXIS).unwrap().powi(2)
-            / N::from(SEMI_MINOR_AXIS).unwrap().powi(2);
+        let a_over_b = N::from(SEMI_MAJOR_AXIS).unwrap().powi(2) /
+                       N::from(SEMI_MINOR_AXIS).unwrap().powi(2);
         // Multiplication part
-        let mul = N::from(SEMI_MINOR_AXIS).unwrap()
-            / (x.powi(2) + a_over_b * y.powi(2)
-               + a_over_b * z.powi(2)).sqrt();
+        let mul = N::from(SEMI_MINOR_AXIS).unwrap() /
+                  (x.powi(2) + a_over_b * y.powi(2) + a_over_b * z.powi(2)).sqrt();
         // NOTE: The following has been rearranged to follow ECEF convention
         // that Z points towards the north pole
-        ECEF::new(
-            -(mul * a_over_b * z + z * f.altitude()),
-            mul * a_over_b * y + y * f.altitude(),
-            mul * x + x * f.altitude())
+        ECEF::new(-(mul * a_over_b * z + z * f.altitude()),
+                  mul * a_over_b * y + y * f.altitude(),
+                  mul * x + x * f.altitude())
     }
 }
 
@@ -168,7 +170,7 @@ mod tests {
         fn from_nvector(wgs: WGS84<f64>) -> () {
             let ans = ECEF::from(wgs);
             let test = ECEF::from(NVector::from(wgs));
-            
+
             ecef_close(ans, test);
         }
 
@@ -185,7 +187,7 @@ mod tests {
             // Retrieve the rotation matrix for A converting ENU -> Earth
             let r_en = ecef_a.r_en();
             let vec_e2 = r_en * vec_enu.access();
-            
+
             // These should be equivalent:
             close(vec_e.as_ref(), vec_e2.as_ref(), 0.0000001);
         }

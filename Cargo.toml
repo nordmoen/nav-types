@@ -4,9 +4,16 @@ version = "0.1.0"
 authors = ["Jørgen Nordmoen <nordmoen90@gmail.com>"]
 
 [dependencies]
+clippy = { version = "0.0.80", optional = true }
 nalgebra = "0.8.2"
 num-traits = "0.1.34"
 
 [dev-dependencies]
 assert = "0.7.1"
 quickcheck = "0.3.1"
+
+[features]
+default = []
+dev = ["clippy"]
+
+
