@@ -4,7 +4,7 @@ use ::nvector::NVector;
 use ::wgs84::{ECCENTRICITY_SQ, SEMI_MAJOR_AXIS, SEMI_MINOR_AXIS, WGS84};
 use na::{Matrix3, Point3, Transpose};
 use num_traits::Float;
-use std::convert::From;
+use std::convert::{From, Into};
 use std::ops::{Add, AddAssign, Sub, SubAssign};
 
 /// Earth Centered Earth Fixed position
@@ -60,17 +60,25 @@ impl<N: Float> ECEF<N> {
     }
 }
 
-impl<N: Float> Add<ENU<N>> for ECEF<N> {
+impl<N, T> Add<T> for ECEF<N>
+    where N: Float,
+          T: Into<ENU<N>>
+{
     type Output = ECEF<N>;
-    fn add(self, right: ENU<N>) -> ECEF<N> {
-        let pos = self.0 + self.r_en() * right.access();
+    fn add(self, right: T) -> ECEF<N> {
+        let enu = T::into(right);
+        let pos = self.0 + self.r_en() * enu.access();
         ECEF(pos)
     }
 }
 
-impl<N: Float + AddAssign> AddAssign<ENU<N>> for ECEF<N> {
-    fn add_assign(&mut self, right: ENU<N>) {
-        self.0 += self.r_en() * right.access();
+impl<N, T> AddAssign<T> for ECEF<N>
+    where N: Float + AddAssign,
+          T: Into<ENU<N>>
+{
+    fn add_assign(&mut self, right: T) {
+        let enu = T::into(right);
+        self.0 += self.r_en() * enu.access();
     }
 }
 
@@ -84,17 +92,25 @@ impl<N: Float> Sub<ECEF<N>> for ECEF<N> {
     }
 }
 
-impl<N: Float> Sub<ENU<N>> for ECEF<N> {
+impl<N, T> Sub<T> for ECEF<N>
+    where N: Float,
+          T: Into<ENU<N>>
+{
     type Output = ECEF<N>;
-    fn sub(self, right: ENU<N>) -> ECEF<N> {
-        let vec_e = self.r_en() * right.access();
+    fn sub(self, right: T) -> ECEF<N> {
+        let enu = T::into(right);
+        let vec_e = self.r_en() * enu.access();
         ECEF(self.0 - vec_e)
     }
 }
 
-impl<N: Float + SubAssign> SubAssign<ENU<N>> for ECEF<N> {
-    fn sub_assign(&mut self, right: ENU<N>) {
-        let vec_e = self.r_en() * right.access();
+impl<N, T> SubAssign<T> for ECEF<N>
+    where N: Float + SubAssign,
+          T: Into<ENU<N>>
+{
+    fn sub_assign(&mut self, right: T) {
+        let enu = T::into(right);
+        let vec_e = self.r_en() * enu.access();
         self.0 -= vec_e;
     }
 }
@@ -103,22 +119,25 @@ impl<N: Float + SubAssign> SubAssign<ENU<N>> for ECEF<N> {
 // can be converted to ECEF
 macro_rules! ecef_impl {
     ($T:ident) => (
-        impl<N: Float> Add<ENU<N>> for $T<N> {
+        impl<N, T> Add<T> for $T<N> 
+        where N: Float, T: Into<ENU<N>> {
             type Output = $T<N>;
-            fn add(self, right: ENU<N>) -> Self {
+            fn add(self, right: T) -> Self {
                 $T::from(ECEF::from(self) + right)
             }
         }
 
-        impl<N: Float> AddAssign<ENU<N>> for $T<N> {
-            fn add_assign(&mut self, right: ENU<N>) {
+        impl<N, T> AddAssign<T> for $T<N> 
+        where N: Float + AddAssign, T: Into<ENU<N>> {
+            fn add_assign(&mut self, right: T) {
                 *self = $T::from(ECEF::from(*self) + right);
             }
         }
 
-        impl<N: Float> Sub<ENU<N>> for $T<N> {
+        impl<N, T> Sub<T> for $T<N> 
+        where N: Float, T: Into<ENU<N>> {
             type Output = $T<N>;
-            fn sub(self, right: ENU<N>) -> $T<N> {
+            fn sub(self, right: T) -> $T<N> {
                 $T::from(ECEF::from(self) - right)
             }
         }
@@ -130,8 +149,9 @@ macro_rules! ecef_impl {
             }
         }
 
-        impl<N: Float> SubAssign<ENU<N>> for $T<N> {
-            fn sub_assign(&mut self, right: ENU<N>) {
+        impl<N, T> SubAssign<T> for $T<N> 
+        where N: Float + SubAssign, T: Into<ENU<N>> {
+            fn sub_assign(&mut self, right: T) {
                 *self = $T::from(ECEF::from(*self) - right);
             }
         }
@@ -191,12 +211,15 @@ impl<N: Float> From<NVector<N>> for ECEF<N> {
 #[cfg(test)]
 mod tests {
     use ::Access;
+    use ::enu::ENU;
+    use ::ned::NED;
     use ::nvector::NVector;
     use ::wgs84::WGS84;
     use assert::close;
     use na::Norm;
     use super::*;
 
+    // Helper method to check that two ECEF positions are equal
     fn ecef_close(a: ECEF<f64>, b: ECEF<f64>) {
         close(a.x(), b.x(), 0.000001);
         close(a.y(), b.y(), 0.000001);
@@ -238,6 +261,8 @@ mod tests {
         }
 
         fn add_vector(a: WGS84<f64>, b: WGS84<f64>) -> () {
+            // Test that the difference between two positions added to
+            // the first position leads to the second position
             let ecef_a = ECEF::from(a);
             let ecef_b = ECEF::from(b);
 
@@ -248,10 +273,46 @@ mod tests {
         }
 
         fn distance(a: WGS84<f64>, b: WGS84<f64>) -> () {
+            // Test that the vector A->B and B->A is of equal length
             let dist_ab = (ECEF::from(b) - ECEF::from(a)).norm();
             let dist_ba = (ECEF::from(a) - ECEF::from(b)).norm();
 
             close(dist_ab, dist_ba, 0.000001);
+        }
+
+        fn add_ned(a: WGS84<f64>, n: f64, e: f64, d: f64) -> () {
+            // Test that adding a random NED vector to an ECEF position
+            // is the same as adding the ENU version of the vector
+            let ecef = ECEF::from(a);
+            let enu_vec = ENU::new(e, n, -d);
+            let ned_vec = NED::new(n, e, d);
+
+            let ecef_enu = ecef + enu_vec;
+            let ecef_ned = ecef + ned_vec;
+            ecef_close(ecef_enu, ecef_ned);
+        }
+
+        fn sub_ned(a: WGS84<f64>, n: f64, e: f64, d: f64) -> () {
+            // See `add_ned`
+            let ecef = ECEF::from(a);
+            let enu_vec = ENU::new(e, n, -d);
+            let ned_vec = NED::new(n, e, d);
+
+            let ecef_enu = ecef - enu_vec;
+            let ecef_ned = ecef - ned_vec;
+            ecef_close(ecef_enu, ecef_ned);
+        }
+
+        fn add_enu(a: WGS84<f64>, e: f64, n: f64, u: f64) -> () {
+            // Test that adding a random ENU vector to an ECEF position
+            // than taking the difference between those two positions
+            // result in the original ENU vector
+            let ecef = ECEF::from(a);
+            let enu = ENU::new(e, n, u);
+
+            let ecef_2 = ecef + enu;
+            let enu_2 = ecef_2 - ecef;
+            close(enu.access().as_ref(), enu_2.access().as_ref(), 0.0000001);
         }
     }
 }

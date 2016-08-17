@@ -11,10 +11,7 @@
 //!
 //! # Example
 //! ```rust
-//! use nav_types::ECEF;
-//! use nav_types::ENU;
-//! use nav_types::NED;
-//! use nav_types::WGS84;
+//! use nav_types::{ECEF, WGS84, ENU, NED};
 //!
 //! // Define positions using latitude and longitude on the WGS84 ellipsoid
 //! let oslo = WGS84::new(59.95, 10.75, 0.0);
@@ -24,14 +21,15 @@
 //!     oslo.distance(&stockholm));
 //!
 //! // Calculate vectors between positions
-//! let vec = ECEF::from(stockholm) - ECEF::from(oslo);
+//! // This is equivalent of doint `ECEF::from(stockholm) - ECEF::from(oslo)`
+//! let vec = stockholm - oslo;
 //! println!("Vector between Oslo and Stockholm: {:?}", vec);
 //!
 //! // Easily convert between ENU and NED vectors
 //! let ned_vec = NED::from(vec);
 //!
 //! // Add vectors to positions
-//! let stockholm_2 = ECEF::from(oslo) + vec + ENU::new(0.0, 10.0, 0.0);
+//! let stockholm_2 = ECEF::from(oslo) + ned_vec + ENU::new(0.0, 10.0, 0.0);
 //! ```
 
 extern crate nalgebra as na;

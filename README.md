@@ -31,6 +31,13 @@ test wgs84::difference   ... bench:       2,305 ns/iter (+/- 304)
 ```
 
 # Example
+Place this in your `Cargo.toml`
+```toml
+nav-types = "0.2"
+```
+
+and use it to calculate vectors and position:
+
 ```rust
 extern crate nav_types;
 
@@ -51,4 +58,9 @@ let pos_a = WGS84::new(36.12, -86.67, 0.0);
 
 let vec = ENU::new(0.0, 0.0, 10.0);
 let pos_a_10m_up = pos_a + vec;
+
+// Or with `NED` vector
+
+let ned_vec = NED::new(0.0, 0.0, -10.0);
+let pos_a_10m_up_2 = pos_a + ned_vec;
 ```
