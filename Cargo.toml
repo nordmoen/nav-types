@@ -1,17 +1,17 @@
 [package]
 name = "nav-types"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Jørgen Nordmoen <nordmoen90@gmail.com>"]
 description = "Easily work with global positions and vectors"
 
 homepage = "https://github.com/nordmoen/nav-types"
 repository = "https://github.com/nordmoen/nav-types.git"
 
-keywords = ["nav", "navigation", "ecef", "latitude", "longitude", "wgs84"]
+keywords = ["nav", "navigation", "ecef", "latitude", "wgs84"]
 license = "MIT"
 
 [dependencies]
-clippy = { version = "0.0.80", optional = true }
+clippy = { version = "0.0.82", optional = true }
 nalgebra = "0.8.2"
 num-traits = "0.1.34"
 
