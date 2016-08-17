@@ -13,8 +13,22 @@ This conversion happens behind the scenes and for this reason could be a source
 of some surprise. It is therefor advised to try and use `ECEF` for as long as
 possible only converting to and from at the beginning and end.
 
-To see these result in action run the benchmark tests which shows the difference
-between the formats.
+On my laptop (absolute numbers will differ on different machines, but relative
+differences should be similar)
+
+```bash
+running 10 tests
+test ecef::add_vector    ... bench:       1,321 ns/iter (+/- 21)
+test ecef::difference    ... bench:       1,306 ns/iter (+/- 16)
+test ecef::from_nvector  ... bench:          21 ns/iter (+/- 1)
+test ecef::from_wgs84    ... bench:         492 ns/iter (+/- 23)
+test nvector::add_vector ... bench:       1,486 ns/iter (+/- 61)
+test nvector::difference ... bench:       1,352 ns/iter (+/- 230)
+test nvector::from_ecef  ... bench:         144 ns/iter (+/- 3)
+test nvector::from_wgs84 ... bench:         382 ns/iter (+/- 16)
+test wgs84::add_vector   ... bench:       2,154 ns/iter (+/- 302)
+test wgs84::difference   ... bench:       2,305 ns/iter (+/- 304)
+```
 
 # Example
 ```rust

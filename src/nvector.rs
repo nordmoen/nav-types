@@ -1,10 +1,8 @@
 use ::ecef::ECEF;
-use ::enu::ENU;
 use ::wgs84::{ECCENTRICITY_SQ, SEMI_MAJOR_AXIS, WGS84};
 use na::Vector3;
 use num_traits::Float;
 use std::convert::From;
-use std::ops::{Add, AddAssign, Sub, SubAssign};
 
 /// N-Vector position
 ///
@@ -37,53 +35,6 @@ impl<N: Copy> NVector<N> {
     /// Get the altitude of this position
     pub fn altitude(&self) -> N {
         self.alt
-    }
-}
-
-impl<N: Float> Add<ENU<N>> for NVector<N> {
-    type Output = NVector<N>;
-    fn add(self, right: ENU<N>) -> NVector<N> {
-        // In accordance with Gade(2010), first convert to ECEF position
-        // add vector in ECEF space and convert back
-        NVector::from(ECEF::from(self) + right)
-    }
-}
-
-impl<N: Float> AddAssign<ENU<N>> for NVector<N> {
-    fn add_assign(&mut self, right: ENU<N>) {
-        // In accordance with Gade(2010), first convert to ECEF position
-        // add vector in ECEF space and convert back
-        let new = NVector::from(ECEF::from(*self) + right);
-        self.vec = new.vec;
-        self.alt = new.alt;
-    }
-}
-
-impl<N: Float> Sub<ENU<N>> for NVector<N> {
-    type Output = NVector<N>;
-    fn sub(self, right: ENU<N>) -> NVector<N> {
-        // In accordance with Gade(2010), first convert to ECEF position
-        // add vector in ECEF space and convert back
-        NVector::from(ECEF::from(self) - right)
-    }
-}
-
-impl<N: Float> Sub<NVector<N>> for NVector<N> {
-    type Output = ENU<N>;
-    fn sub(self, right: NVector<N>) -> ENU<N> {
-        // In accordance with Gade(2010), first convert to ECEF position
-        // add vector in ECEF space and convert back
-        ECEF::from(self) - ECEF::from(right)
-    }
-}
-
-impl<N: Float> SubAssign<ENU<N>> for NVector<N> {
-    fn sub_assign(&mut self, right: ENU<N>) {
-        // In accordance with Gade(2010), first convert to ECEF position
-        // add vector in ECEF space and convert back
-        let new = NVector::from(ECEF::from(*self) - right);
-        self.vec = new.vec;
-        self.alt = new.alt;
     }
 }
 

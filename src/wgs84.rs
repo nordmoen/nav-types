@@ -1,10 +1,8 @@
 use ::ecef::ECEF;
-use ::enu::ENU;
 use ::nvector::NVector;
 use num_traits::Float;
 use std::convert::From;
 use std::f32::consts::FRAC_PI_2;
-use std::ops::{Add, AddAssign, Sub, SubAssign};
 
 #[cfg(test)]
 use quickcheck::{Arbitrary, Gen};
@@ -120,46 +118,6 @@ impl<N: Copy> WGS84<N> {
     /// Get longitude in radians
     pub fn longitude(&self) -> N {
         self.lon
-    }
-}
-
-impl<N: Float> Add<ENU<N>> for WGS84<N> {
-    type Output = WGS84<N>;
-    fn add(self, right: ENU<N>) -> WGS84<N> {
-        // Convert to ECEF and perform addition there
-        WGS84::from(ECEF::from(self) + right)
-    }
-}
-
-impl<N: Float> AddAssign<ENU<N>> for WGS84<N> {
-    fn add_assign(&mut self, right: ENU<N>) {
-        let new = WGS84::from(ECEF::from(*self) + right);
-        self.lat = new.lat;
-        self.lon = new.lon;
-        self.alt = new.alt;
-    }
-}
-
-impl<N: Float> Sub<ENU<N>> for WGS84<N> {
-    type Output = WGS84<N>;
-    fn sub(self, right: ENU<N>) -> WGS84<N> {
-        WGS84::from(ECEF::from(self) - right)
-    }
-}
-
-impl<N: Float> Sub<WGS84<N>> for WGS84<N> {
-    type Output = ENU<N>;
-    fn sub(self, right: WGS84<N>) -> ENU<N> {
-        ECEF::from(self) - ECEF::from(right)
-    }
-}
-
-impl<N: Float> SubAssign<ENU<N>> for WGS84<N> {
-    fn sub_assign(&mut self, right: ENU<N>) {
-        let new = WGS84::from(ECEF::from(*self) - right);
-        self.lat = new.lat;
-        self.lon = new.lon;
-        self.alt = new.alt;
     }
 }
 

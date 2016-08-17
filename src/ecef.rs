@@ -99,6 +99,51 @@ impl<N: Float + SubAssign> SubAssign<ENU<N>> for ECEF<N> {
     }
 }
 
+// This macro implements most standard operations for position types that
+// can be converted to ECEF
+macro_rules! ecef_impl {
+    ($T:ident) => (
+        impl<N: Float> Add<ENU<N>> for $T<N> {
+            type Output = $T<N>;
+            fn add(self, right: ENU<N>) -> Self {
+                $T::from(ECEF::from(self) + right)
+            }
+        }
+
+        impl<N: Float> AddAssign<ENU<N>> for $T<N> {
+            fn add_assign(&mut self, right: ENU<N>) {
+                *self = $T::from(ECEF::from(*self) + right);
+            }
+        }
+
+        impl<N: Float> Sub<ENU<N>> for $T<N> {
+            type Output = $T<N>;
+            fn sub(self, right: ENU<N>) -> $T<N> {
+                $T::from(ECEF::from(self) - right)
+            }
+        }
+
+        impl<N: Float> Sub<$T<N>> for $T<N> {
+            type Output = ENU<N>;
+            fn sub(self, right: $T<N>) -> ENU<N> {
+                ECEF::from(self) - ECEF::from(right)
+            }
+        }
+
+        impl<N: Float> SubAssign<ENU<N>> for $T<N> {
+            fn sub_assign(&mut self, right: ENU<N>) {
+                *self = $T::from(ECEF::from(*self) - right);
+            }
+        }
+    )
+}
+
+// In accordance with Gade(2010) all N-Vector operations works through
+// converting to ECEF and then back
+ecef_impl!(NVector);
+// The only way to work with Latitude/Longitude is to convert to ECEF
+ecef_impl!(WGS84);
+
 impl<N: Float> From<WGS84<N>> for ECEF<N> {
     fn from(f: WGS84<N>) -> ECEF<N> {
         // Conversion from:
