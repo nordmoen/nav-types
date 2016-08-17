@@ -1,6 +1,5 @@
 #![feature(test)]
 extern crate test;
-
 extern crate nav_types;
 
 
@@ -83,5 +82,19 @@ mod wgs84{
 
         let vec = pos_b - pos_a;
         b.iter(|| pos_a + vec);
+    }
+
+    #[bench]
+    fn from_ecef(b: &mut Bencher) {
+        let ecef = ECEF::from(WGS84::new(36.12, -86.67, 0.0));
+
+        b.iter(|| WGS84::from(ecef));
+    }
+
+    #[bench]
+    fn from_nvector(b: &mut Bencher) {
+        let nvec = NVector::from(WGS84::new(36.12, -86.67, 0.0));
+
+        b.iter(|| WGS84::from(nvec));
     }
 }

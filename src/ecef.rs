@@ -176,9 +176,9 @@ impl<N: Float> From<WGS84<N>> for ECEF<N> {
         let a = N::from(SEMI_MAJOR_AXIS).unwrap();
         let ecc_part = N::from(ECCENTRICITY_SQ).unwrap();
         let sin_part = N::from(0.5).unwrap() *
-                       (N::from(1.0).unwrap() - (N::from(2.0).unwrap() * f.latitude()).cos());
+                       (N::one() - (N::from(2.0).unwrap() * f.latitude()).cos());
 
-        let n = a / (N::from(1.0).unwrap() - ecc_part * sin_part).sqrt();
+        let n = a / (N::one() - ecc_part * sin_part).sqrt();
         let h = f.altitude();
 
         let x = (h + n) * f.latitude().cos() * f.longitude().cos();
