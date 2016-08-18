@@ -211,6 +211,7 @@ impl Arbitrary for WGS84<f64> {
 
 #[cfg(test)]
 mod tests {
+    use ::enu::ENU;
     use assert::close;
     use quickcheck::{TestResult, quickcheck};
     use super::*;
@@ -219,8 +220,14 @@ mod tests {
         // This function is used to check that illegal latitude and longitude
         // values panics
         if latitude.abs() <= 90.0 && longitude.abs() <= 180.0 {
+            // If both latitude and longitude are within acceptable ranges
+            // we tell quickcheck to discard the test so that it will
+            // re-generate a test with different parameters hopefully
+            // testing other parameters which will fail
             TestResult::discard()
         } else {
+            // If either latitude or longitude is outside acceptable range
+            // the test must fail
             TestResult::must_fail(move || {
                 WGS84::new(latitude, longitude, altitude);
             })
@@ -230,6 +237,21 @@ mod tests {
     #[test]
     fn test_create_wgs84() {
         quickcheck(create_wgs84 as fn(f32, f32, f32) -> TestResult);
+    }
+
+    #[test]
+    fn dateline() {
+        // This test ensures that when moving west from the dateline
+        // the longitude resets to -180
+        let a = WGS84::new(20.0, 180.0, 0.0);
+        let vec = ENU::new(-10.0, 0.0, 0.0);
+
+        let ans = a + vec;
+        // NOTE: Precision here is rather arbitrary and depends on the
+        // length of the vector used and so on, we are mostly interested
+        // in seeing that the longitude is reset to negative
+        close(ans.longitude_degrees(), -180.0, 0.001);
+        close(ans.latitude_degrees(), 20.0, 0.001);
     }
 
     quickcheck!{
