@@ -26,11 +26,19 @@
 //! println!("Vector between Oslo and Stockholm: {:?}", vec);
 //!
 //! // Easily convert between ENU and NED vectors
-//! let ned_vec = NED::from(vec);
+//! let ned_vec = NED::new(1f32, 0.0, 1.0);
+//! let new_vec = vec + ned_vec;
 //!
 //! // Add vectors to positions
-//! let stockholm_2 = ECEF::from(oslo) + ned_vec + ENU::new(0.0, 10.0, 0.0);
+//! let stockholm_2 = ECEF::from(oslo) + new_vec;
 //! ```
+//!
+//! # Where to begin
+//! If you are unsure where to begin I would recommend you to research which
+//! type of date you have available. Most of the time this is where you
+//! should start. If no source is available or you are free to choose I recommend
+//! that you start with `ECEF` and `ENU`. `ECEF` is efficient to calculate with
+//! and `ENU` is quite straight forward and used in many contexts.
 
 extern crate nalgebra as na;
 extern crate num_traits;

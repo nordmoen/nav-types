@@ -36,9 +36,10 @@ impl<N: Copy> NED<N> {
     }
 }
 
-impl<N: Copy + Neg<Output = N>> From<ENU<N>> for NED<N> {
-    fn from(e: ENU<N>) -> Self {
-        NED::new(e.north(), e.east(), -e.up())
+impl<N: Copy + Neg<Output = N>> From<NED<N>> for ENU<N> {
+    /// Convert `NED` vectors into `ENU`
+    fn from(e: NED<N>) -> Self {
+        ENU::new(e.east(), e.north(), -e.down())
     }
 }
 
@@ -94,7 +95,9 @@ impl<N: Copy + DivAssign<N>> DivAssign<N> for NED<N> {
     }
 }
 
-impl<N: BaseFloat> Norm<N> for NED<N> {
+impl<N: BaseFloat> Norm for NED<N> {
+    type NormType = N;
+
     fn norm_squared(&self) -> N {
         self.0.norm_squared()
     }
@@ -103,6 +106,12 @@ impl<N: BaseFloat> Norm<N> for NED<N> {
     }
     fn normalize_mut(&mut self) -> N {
         self.0.normalize_mut()
+    }
+    fn try_normalize(&self, min_norm: Self::NormType) -> Option<Self> {
+        self.0.try_normalize(min_norm).map(NED)
+    }
+    fn try_normalize_mut(&mut self, min_norm: Self::NormType) -> Option<Self::NormType> {
+        self.0.try_normalize_mut(min_norm)
     }
 }
 
@@ -129,12 +138,22 @@ mod tests {
             assert_eq!(vec.down(), d);
         }
 
-        fn from_enu(e: f32, n: f32, u: f32) -> () {
-            let enu = ENU::new(e, n, u);
-            let ned = NED::from(enu);
-            assert_eq!(ned.north(), n);
-            assert_eq!(ned.east(), e);
-            assert_eq!(ned.down(), -u);
+        fn into_enu(n: f32, e: f32, d: f32) -> () {
+            let ned = NED::new(n, e, d);
+            let enu: ENU<_> = ned.into();
+            assert_eq!(n, enu.north());
+            assert_eq!(e, enu.east());
+            assert_eq!(d, -enu.up());
+        }
+
+        fn add_enu(n: f32, e: f32, d: f32) -> () {
+            let ned = NED::new(n, e, d);
+            let enu = ENU::new(e, n, -d);
+            let sum = enu + ned;
+            let twi = ned * 2.0;
+            assert_eq!(sum.north(), twi.north());
+            assert_eq!(sum.east(), twi.east());
+            assert_eq!(sum.up(), -twi.down());
         }
     }
 }

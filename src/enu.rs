@@ -1,13 +1,18 @@
 use ::Access;
-use ::ned::NED;
 use na::{BaseFloat, Norm, Vector3};
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
+use std::convert::Into;
 
 /// East North Up vector
 ///
 /// This struct represents a vector in the ENU coordinate system.
 /// See: [ENU](https://en.wikipedia.org/wiki/Axes_conventions) for a general
 /// description.
+///
+/// # Note
+/// ENU implements `Into` on all operations. This means that any vector that
+/// can be converted to ENU with a `From` implementation will automatically
+/// be able to work with ENU at the cost of the `Into` conversion.
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct ENU<N>(Vector3<N>);
 
@@ -35,41 +40,35 @@ impl<N: Copy> ENU<N> {
     }
 }
 
-impl<N: Copy + Neg<Output = N>> From<NED<N>> for ENU<N> {
-    fn from(n: NED<N>) -> ENU<N> {
-        ENU::new(n.east(), n.north(), -n.down())
-    }
-}
-
-impl<N: Copy + Add<N, Output = N>> Add<ENU<N>> for ENU<N> {
+impl<N: Copy + Add<N, Output = N>, T: Into<ENU<N>>> Add<T> for ENU<N> {
     type Output = ENU<N>;
-    fn add(self, right: ENU<N>) -> ENU<N> {
-        ENU(self.0 + right.0)
+    fn add(self, right: T) -> Self::Output {
+        ENU(self.0 + right.into().0)
     }
 }
 
-impl<N: Copy + AddAssign<N>> AddAssign<ENU<N>> for ENU<N> {
-    fn add_assign(&mut self, right: ENU<N>) {
-        self.0 += right.0
+impl<N: Copy + AddAssign<N>, T: Into<ENU<N>>> AddAssign<T> for ENU<N> {
+    fn add_assign(&mut self, right: T) {
+        self.0 += right.into().0
     }
 }
 
-impl<N: Copy + Sub<N, Output = N>> Sub<ENU<N>> for ENU<N> {
+impl<N: Copy + Sub<N, Output = N>, T: Into<ENU<N>>> Sub<T> for ENU<N> {
     type Output = ENU<N>;
-    fn sub(self, right: ENU<N>) -> ENU<N> {
-        ENU(self.0 - right.0)
+    fn sub(self, right: T) -> Self::Output {
+        ENU(self.0 - right.into().0)
     }
 }
 
-impl<N: Copy + SubAssign<N>> SubAssign<ENU<N>> for ENU<N> {
-    fn sub_assign(&mut self, right: ENU<N>) {
-        self.0 -= right.0
+impl<N: Copy + SubAssign<N>, T: Into<ENU<N>>> SubAssign<T> for ENU<N> {
+    fn sub_assign(&mut self, right: T) {
+        self.0 -= right.into().0
     }
 }
 
 impl<N: Copy + Mul<N, Output = N>> Mul<N> for ENU<N> {
     type Output = ENU<N>;
-    fn mul(self, right: N) -> ENU<N> {
+    fn mul(self, right: N) -> Self::Output {
         ENU(self.0 * right)
     }
 }
@@ -82,7 +81,7 @@ impl<N: Copy + MulAssign<N>> MulAssign<N> for ENU<N> {
 
 impl<N: Copy + Div<N, Output = N>> Div<N> for ENU<N> {
     type Output = ENU<N>;
-    fn div(self, right: N) -> Self {
+    fn div(self, right: N) -> Self::Output {
         ENU(self.0 / right)
     }
 }
@@ -93,7 +92,9 @@ impl<N: Copy + DivAssign<N>> DivAssign<N> for ENU<N> {
     }
 }
 
-impl<N: BaseFloat> Norm<N> for ENU<N> {
+impl<N: BaseFloat> Norm for ENU<N> {
+    type NormType = N;
+
     fn norm_squared(&self) -> N {
         self.0.norm_squared()
     }
@@ -102,6 +103,12 @@ impl<N: BaseFloat> Norm<N> for ENU<N> {
     }
     fn normalize_mut(&mut self) -> N {
         self.0.normalize_mut()
+    }
+    fn try_normalize(&self, min_norm: Self::NormType) -> Option<Self> {
+        self.0.try_normalize(min_norm).map(ENU)
+    }
+    fn try_normalize_mut(&mut self, min_norm: Self::NormType) -> Option<Self::NormType> {
+        self.0.try_normalize_mut(min_norm)
     }
 }
 
