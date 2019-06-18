@@ -1,8 +1,8 @@
-use enu::ENU;
+use crate::enu::ENU;
+use crate::Access;
 use na::{BaseFloat, Norm, Vector3};
 use std::convert::From;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
-use Access;
 
 /// North East Down vector
 ///

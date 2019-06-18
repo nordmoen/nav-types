@@ -3,6 +3,7 @@ name = "nav-types"
 version = "0.3.0"
 authors = ["Jørgen Nordmoen <nordmoen90@gmail.com>"]
 description = "Easily work with global positions and vectors"
+edition = "2018"
 
 homepage = "https://github.com/nordmoen/nav-types"
 repository = "https://github.com/nordmoen/nav-types.git"

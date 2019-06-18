@@ -1,8 +1,8 @@
-use ecef::ECEF;
+use crate::ecef::ECEF;
+use crate::wgs84::{ECCENTRICITY_SQ, SEMI_MAJOR_AXIS, WGS84};
 use na::Vector3;
 use num_traits::Float;
 use std::convert::From;
-use wgs84::{ECCENTRICITY_SQ, SEMI_MAJOR_AXIS, WGS84};
 
 /// N-Vector position
 ///

@@ -1,7 +1,7 @@
+use crate::Access;
 use na::{BaseFloat, Norm, Vector3};
 use std::convert::Into;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
-use Access;
 
 /// East North Up vector
 ///

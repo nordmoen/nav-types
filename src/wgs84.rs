@@ -1,6 +1,6 @@
-use ecef::ECEF;
+use crate::ecef::ECEF;
+use crate::nvector::NVector;
 use num_traits::Float;
-use nvector::NVector;
 use std::convert::From;
 use std::f32::consts::FRAC_PI_2;
 
