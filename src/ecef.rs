@@ -2,7 +2,7 @@ use crate::enu::ENU;
 use crate::nvector::NVector;
 use crate::wgs84::{ECCENTRICITY_SQ, SEMI_MAJOR_AXIS, SEMI_MINOR_AXIS, WGS84};
 use crate::Access;
-use na::{Matrix3, Point3, Transpose};
+use na::{BaseFloat, Matrix3, Norm, Point3, Transpose};
 use num_traits::Float;
 use std::convert::{From, Into};
 use std::ops::{Add, AddAssign, Sub, SubAssign};
@@ -40,7 +40,7 @@ impl<N: Copy> ECEF<N> {
 
 impl<N: Float> ECEF<N> {
     /// Create a rotation matrix from ECEF frame to ENU frame
-    fn r_en(self) -> Matrix3<N> {
+    fn r_enu_from_ecef(self) -> Matrix3<N> {
         let wgs = WGS84::from(self);
         Matrix3::new(
             -wgs.longitude().sin(),
@@ -56,8 +56,16 @@ impl<N: Float> ECEF<N> {
     }
 
     /// Create a rotation matrix from ENU frame to ECEF frame
-    fn r_ne(self) -> Matrix3<N> {
-        self.r_en().transpose()
+    fn r_ecef_from_enu(self) -> Matrix3<N> {
+        self.r_enu_from_ecef().transpose()
+    }
+
+    /// Euclidean distance between two ECEF positions
+    pub fn distance(&self, other: &ECEF<N>) -> N
+    where
+        N: BaseFloat,
+    {
+        (other.0 - self.0).norm()
     }
 }
 
@@ -69,7 +77,7 @@ where
     type Output = ECEF<N>;
     fn add(self, right: T) -> ECEF<N> {
         let enu = T::into(right);
-        let pos = self.0 + self.r_en() * enu.access();
+        let pos = self.0 + self.r_ecef_from_enu() * enu.access();
         ECEF(pos)
     }
 }
@@ -81,14 +89,14 @@ where
 {
     fn add_assign(&mut self, right: T) {
         let enu = T::into(right);
-        self.0 = self.0 + (self.r_en() * enu.access());
+        self.0 = self.0 + (self.r_ecef_from_enu() * enu.access());
     }
 }
 
 impl<N: Float> Sub<ECEF<N>> for ECEF<N> {
     type Output = ENU<N>;
     fn sub(self, right: ECEF<N>) -> ENU<N> {
-        let enu = right.r_ne() * (self.0 - right.0);
+        let enu = right.r_enu_from_ecef() * (self.0 - right.0);
         ENU::new(enu.x, enu.y, enu.z)
     }
 }
@@ -101,7 +109,7 @@ where
     type Output = ECEF<N>;
     fn sub(self, right: T) -> ECEF<N> {
         let enu = T::into(right);
-        ECEF(self.0 - (self.r_en() * enu.access()))
+        ECEF(self.0 - (self.r_ecef_from_enu() * enu.access()))
     }
 }
 
@@ -112,7 +120,7 @@ where
 {
     fn sub_assign(&mut self, right: T) {
         let enu = T::into(right);
-        self.0 = self.0 - (self.r_en() * enu.access());
+        self.0 = self.0 - (self.r_ecef_from_enu() * enu.access());
     }
 }
 
@@ -268,8 +276,8 @@ mod tests {
             let vec_e = ecef_b.0 - ecef_a.0;
 
             // Retrieve the rotation matrix for A converting ENU -> Earth
-            let r_en = ecef_a.r_en();
-            let vec_e2 = r_en * vec_enu.access();
+            let r_ecef_from_enu = ecef_a.r_ecef_from_enu();
+            let vec_e2 = r_ecef_from_enu * vec_enu.access();
 
             // These should be equivalent:
             close(vec_e.as_ref(), vec_e2.as_ref(), 0.0000001);

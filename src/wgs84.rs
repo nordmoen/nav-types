@@ -255,16 +255,53 @@ mod tests {
     #[test]
     fn dateline() {
         // This test ensures that when moving west from the dateline
-        // the longitude resets to -180
+        // the longitude resets to 180
         let a = WGS84::new(20.0, 180.0, 0.0);
         let vec = ENU::new(-10.0, 0.0, 0.0);
 
         let ans = a + vec;
         // NOTE: Precision here is rather arbitrary and depends on the
         // length of the vector used and so on, we are mostly interested
-        // in seeing that the longitude is reset to negative
-        close(ans.longitude_degrees(), -180.0, 0.001);
+        // in seeing that the longitude is reset to positive
+        close(ans.longitude_degrees(), 180.0, 0.001);
         close(ans.latitude_degrees(), 20.0, 0.001);
+    }
+
+    #[test]
+    fn conversion_inversion_ecef() {
+        let oslo: WGS84<f64> = WGS84::new(59.95, 10.75, 0.0);
+        let stockholm: WGS84<f64> = WGS84::new(59.329444, 18.068611, 0.0);
+
+        for &place in [oslo, stockholm].iter() {
+            let distance = place.distance(&WGS84::from(ECEF::from(place)));
+            close(distance, 0.0, 1.0);
+        }
+    }
+
+    #[test]
+    fn conversion_ecef() {
+        let oslo_wgs84: WGS84<f64> = WGS84::new(59.95, 10.75, 0.0);
+        let oslo_ecef: ECEF<f64> = ECEF::new(3145735.0, 597236.0, 5497690.0);
+
+        for &(place_wgs84, place_ecef) in [(oslo_wgs84, oslo_ecef)].iter() {
+            let distance = place_wgs84.distance(&WGS84::from(place_ecef));
+            close(distance, 0.0, 1.0);
+        }
+    }
+
+    #[test]
+    fn add_enu() {
+        let oslo: WGS84<f64> = WGS84::new(59.95, 10.75, 0.0);
+        let oslo_high: WGS84<f64> = WGS84::new(59.95, 10.75, 100.0);
+
+        let stockholm: WGS84<f64> = WGS84::new(59.329444, 18.068611, 0.0);
+        let stockholm_high: WGS84<f64> = WGS84::new(59.329444, 18.068611, 100.0);
+
+        for &(place, place_high) in [(oslo, oslo_high), (stockholm, stockholm_high)].into_iter() {
+            let distance =
+                ECEF::from(place_high).distance(&(ECEF::from(place) + ENU::new(0.0, 0.0, 100.0)));
+            close(distance, 0.0, 0.00001);
+        }
     }
 
     quickcheck! {
