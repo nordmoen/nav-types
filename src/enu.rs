@@ -1,7 +1,7 @@
-use ::Access;
 use na::{BaseFloat, Norm, Vector3};
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 use std::convert::Into;
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
+use Access;
 
 /// East North Up vector
 ///
@@ -121,7 +121,7 @@ impl<N> Access<Vector3<N>> for ENU<N> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ::ned::NED;
+    use ned::NED;
 
     quickcheck! {
         fn create_enu(e: f32, n: f32, u: f32) -> () {

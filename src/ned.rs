@@ -1,8 +1,8 @@
-use ::Access;
-use ::enu::ENU;
+use enu::ENU;
 use na::{BaseFloat, Norm, Vector3};
 use std::convert::From;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
+use Access;
 
 /// North East Down vector
 ///
@@ -124,7 +124,7 @@ impl<N> Access<Vector3<N>> for NED<N> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ::enu::ENU;
+    use enu::ENU;
 
     quickcheck! {
         fn create_ned(n: f32, e: f32, d: f32) -> () {

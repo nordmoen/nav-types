@@ -1,11 +1,11 @@
-use ::Access;
-use ::enu::ENU;
-use ::nvector::NVector;
-use ::wgs84::{ECCENTRICITY_SQ, SEMI_MAJOR_AXIS, SEMI_MINOR_AXIS, WGS84};
+use enu::ENU;
 use na::{Matrix3, Point3, Transpose};
 use num_traits::Float;
+use nvector::NVector;
 use std::convert::{From, Into};
 use std::ops::{Add, AddAssign, Sub, SubAssign};
+use wgs84::{ECCENTRICITY_SQ, SEMI_MAJOR_AXIS, SEMI_MINOR_AXIS, WGS84};
+use Access;
 
 /// Earth Centered Earth Fixed position
 ///
@@ -42,16 +42,17 @@ impl<N: Float> ECEF<N> {
     /// Create a rotation matrix from ECEF frame to ENU frame
     fn r_en(self) -> Matrix3<N> {
         let wgs = WGS84::from(self);
-        Matrix3::new(-wgs.longitude().sin(),
-                     wgs.longitude().cos(),
-                     N::zero(),
-                     -wgs.latitude().sin() * wgs.longitude().cos(),
-                     -wgs.latitude().sin() * wgs.longitude().sin(),
-                     wgs.latitude().cos(),
-                     wgs.latitude().cos() * wgs.longitude().cos(),
-                     wgs.latitude().cos() * wgs.longitude().sin(),
-                     wgs.latitude().sin())
-
+        Matrix3::new(
+            -wgs.longitude().sin(),
+            wgs.longitude().cos(),
+            N::zero(),
+            -wgs.latitude().sin() * wgs.longitude().cos(),
+            -wgs.latitude().sin() * wgs.longitude().sin(),
+            wgs.latitude().cos(),
+            wgs.latitude().cos() * wgs.longitude().cos(),
+            wgs.latitude().cos() * wgs.longitude().sin(),
+            wgs.latitude().sin(),
+        )
     }
 
     /// Create a rotation matrix from ENU frame to ECEF frame
@@ -61,8 +62,9 @@ impl<N: Float> ECEF<N> {
 }
 
 impl<N, T> Add<T> for ECEF<N>
-    where N: Float,
-          T: Into<ENU<N>>
+where
+    N: Float,
+    T: Into<ENU<N>>,
 {
     type Output = ECEF<N>;
     fn add(self, right: T) -> ECEF<N> {
@@ -73,8 +75,9 @@ impl<N, T> Add<T> for ECEF<N>
 }
 
 impl<N, T> AddAssign<T> for ECEF<N>
-    where N: Float + AddAssign,
-          T: Into<ENU<N>>
+where
+    N: Float + AddAssign,
+    T: Into<ENU<N>>,
 {
     fn add_assign(&mut self, right: T) {
         let enu = T::into(right);
@@ -93,8 +96,9 @@ impl<N: Float> Sub<ECEF<N>> for ECEF<N> {
 }
 
 impl<N, T> Sub<T> for ECEF<N>
-    where N: Float,
-          T: Into<ENU<N>>
+where
+    N: Float,
+    T: Into<ENU<N>>,
 {
     type Output = ECEF<N>;
     fn sub(self, right: T) -> ECEF<N> {
@@ -105,8 +109,9 @@ impl<N, T> Sub<T> for ECEF<N>
 }
 
 impl<N, T> SubAssign<T> for ECEF<N>
-    where N: Float + SubAssign,
-          T: Into<ENU<N>>
+where
+    N: Float + SubAssign,
+    T: Into<ENU<N>>,
 {
     fn sub_assign(&mut self, right: T) {
         let enu = T::into(right);
@@ -118,24 +123,33 @@ impl<N, T> SubAssign<T> for ECEF<N>
 // This macro implements most standard operations for position types that
 // can be converted to ECEF
 macro_rules! ecef_impl {
-    ($T:ident) => (
-        impl<N, T> Add<T> for $T<N> 
-        where N: Float, T: Into<ENU<N>> {
+    ($T:ident) => {
+        impl<N, T> Add<T> for $T<N>
+        where
+            N: Float,
+            T: Into<ENU<N>>,
+        {
             type Output = $T<N>;
             fn add(self, right: T) -> Self {
                 $T::from(ECEF::from(self) + right)
             }
         }
 
-        impl<N, T> AddAssign<T> for $T<N> 
-        where N: Float + AddAssign, T: Into<ENU<N>> {
+        impl<N, T> AddAssign<T> for $T<N>
+        where
+            N: Float + AddAssign,
+            T: Into<ENU<N>>,
+        {
             fn add_assign(&mut self, right: T) {
                 *self = $T::from(ECEF::from(*self) + right);
             }
         }
 
-        impl<N, T> Sub<T> for $T<N> 
-        where N: Float, T: Into<ENU<N>> {
+        impl<N, T> Sub<T> for $T<N>
+        where
+            N: Float,
+            T: Into<ENU<N>>,
+        {
             type Output = $T<N>;
             fn sub(self, right: T) -> $T<N> {
                 $T::from(ECEF::from(self) - right)
@@ -149,13 +163,16 @@ macro_rules! ecef_impl {
             }
         }
 
-        impl<N, T> SubAssign<T> for $T<N> 
-        where N: Float + SubAssign, T: Into<ENU<N>> {
+        impl<N, T> SubAssign<T> for $T<N>
+        where
+            N: Float + SubAssign,
+            T: Into<ENU<N>>,
+        {
             fn sub_assign(&mut self, right: T) {
                 *self = $T::from(ECEF::from(*self) - right);
             }
         }
-    )
+    };
 }
 
 // In accordance with Gade(2010) all N-Vector operations works through
@@ -175,8 +192,8 @@ impl<N: Float> From<WGS84<N>> for ECEF<N> {
         // 4538c3ec38ddf11b77531d3bd2af75ee1fc2061
         let a = N::from(SEMI_MAJOR_AXIS).unwrap();
         let ecc_part = N::from(ECCENTRICITY_SQ).unwrap();
-        let sin_part = N::from(0.5).unwrap() *
-                       (N::one() - (N::from(2.0).unwrap() * f.latitude()).cos());
+        let sin_part =
+            N::from(0.5).unwrap() * (N::one() - (N::from(2.0).unwrap() * f.latitude()).cos());
 
         let n = a / (N::one() - ecc_part * sin_part).sqrt();
         let h = f.altitude();
@@ -195,29 +212,31 @@ impl<N: Float> From<NVector<N>> for ECEF<N> {
         let x = f.vector().z;
         let y = f.vector().y;
         let z = -f.vector().x;
-        let a_over_b = N::from(SEMI_MAJOR_AXIS).unwrap().powi(2) /
-                       N::from(SEMI_MINOR_AXIS).unwrap().powi(2);
+        let a_over_b =
+            N::from(SEMI_MAJOR_AXIS).unwrap().powi(2) / N::from(SEMI_MINOR_AXIS).unwrap().powi(2);
         // Multiplication part
-        let mul = N::from(SEMI_MINOR_AXIS).unwrap() /
-                  (x.powi(2) + a_over_b * y.powi(2) + a_over_b * z.powi(2)).sqrt();
+        let mul = N::from(SEMI_MINOR_AXIS).unwrap()
+            / (x.powi(2) + a_over_b * y.powi(2) + a_over_b * z.powi(2)).sqrt();
         // NOTE: The following has been rearranged to follow ECEF convention
         // that Z points towards the north pole
-        ECEF::new(-(mul * a_over_b * z + z * f.altitude()),
-                  mul * a_over_b * y + y * f.altitude(),
-                  mul * x + x * f.altitude())
+        ECEF::new(
+            -(mul * a_over_b * z + z * f.altitude()),
+            mul * a_over_b * y + y * f.altitude(),
+            mul * x + x * f.altitude(),
+        )
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use ::Access;
-    use ::enu::ENU;
-    use ::ned::NED;
-    use ::nvector::NVector;
-    use ::wgs84::WGS84;
-    use assert::close;
-    use na::Norm;
     use super::*;
+    use assert::close;
+    use enu::ENU;
+    use na::Norm;
+    use ned::NED;
+    use nvector::NVector;
+    use wgs84::WGS84;
+    use Access;
 
     // Helper method to check that two ECEF positions are equal
     fn ecef_close(a: ECEF<f64>, b: ECEF<f64>) {

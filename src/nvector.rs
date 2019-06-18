@@ -1,8 +1,8 @@
-use ::ecef::ECEF;
-use ::wgs84::{ECCENTRICITY_SQ, SEMI_MAJOR_AXIS, WGS84};
+use ecef::ECEF;
 use na::Vector3;
 use num_traits::Float;
 use std::convert::From;
+use wgs84::{ECCENTRICITY_SQ, SEMI_MAJOR_AXIS, WGS84};
 
 /// N-Vector position
 ///
@@ -44,9 +44,11 @@ impl<N: Float> From<WGS84<N>> for NVector<N> {
         // axes point directly north, this affects the way which N-vectors are
         // defined. See: Table 2 in Gade(2010).
         // NOTE: This is consistent with the ECEF implementation in this crate
-        let vec = Vector3::new(f.longitude().cos() * f.latitude().cos(),
-                               f.longitude().sin() * f.latitude().cos(),
-                               f.latitude().sin());
+        let vec = Vector3::new(
+            f.longitude().cos() * f.latitude().cos(),
+            f.longitude().sin() * f.latitude().cos(),
+            f.latitude().sin(),
+        );
         NVector::new(vec, f.altitude())
     }
 }
@@ -89,10 +91,10 @@ impl<N: Float> From<ECEF<N>> for NVector<N> {
 
 #[cfg(test)]
 mod tests {
-    use ::ecef::ECEF;
-    use ::wgs84::WGS84;
-    use assert::close;
     use super::*;
+    use assert::close;
+    use ecef::ECEF;
+    use wgs84::WGS84;
 
     quickcheck! {
         fn from_wgs84(wgs: WGS84<f64>) -> () {

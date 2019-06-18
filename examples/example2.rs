@@ -1,6 +1,6 @@
 extern crate nav_types;
 
-use nav_types::{WGS84, ENU};
+use nav_types::{ENU, WGS84};
 
 fn main() {
     // We start with the position of our "vehicle"

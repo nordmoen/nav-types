@@ -1,6 +1,6 @@
-use ::ecef::ECEF;
-use ::nvector::NVector;
+use ecef::ECEF;
 use num_traits::Float;
+use nvector::NVector;
 use std::convert::From;
 use std::f32::consts::FRAC_PI_2;
 
@@ -42,10 +42,14 @@ impl<N: Float> WGS84<N> {
     /// This will panic if `latitude` or `longitude` are not defined on the
     /// WGS84 ellipsoid.
     pub fn new(latitude: N, longitude: N, altitude: N) -> WGS84<N> {
-        assert!(latitude.abs() <= N::from(90.0).unwrap(),
-                "Latitude must be in the range [-90, 90]");
-        assert!(longitude.abs() <= N::from(180.0).unwrap(),
-                "Longitude must be in the range [-180, 180]");
+        assert!(
+            latitude.abs() <= N::from(90.0).unwrap(),
+            "Latitude must be in the range [-90, 90]"
+        );
+        assert!(
+            longitude.abs() <= N::from(180.0).unwrap(),
+            "Longitude must be in the range [-180, 180]"
+        );
         WGS84 {
             lat: latitude.to_radians(),
             lon: longitude.to_radians(),
@@ -97,9 +101,10 @@ impl<N: Float> WGS84<N> {
         let delta_lat = other.latitude() - self.latitude();
         let delta_lon = other.longitude() - self.longitude();
 
-        let a = (delta_lat / N::from(2.0).unwrap()).sin().powi(2) +
-                self.latitude().cos() * other.latitude().cos() *
-                (delta_lon / N::from(2.0).unwrap()).sin().powi(2);
+        let a = (delta_lat / N::from(2.0).unwrap()).sin().powi(2)
+            + self.latitude().cos()
+                * other.latitude().cos()
+                * (delta_lon / N::from(2.0).unwrap()).sin().powi(2);
         let c = N::from(2.0).unwrap() * a.sqrt().asin();
 
         N::from(SEMI_MAJOR_AXIS).unwrap() * c + (self.altitude() - other.altitude()).abs()
@@ -180,11 +185,13 @@ impl<N: Float> From<ECEF<N>> for WGS84<N> {
         let altitude = ((k + e_2 - N::one()) / k) * (d.powi(2) + f.z().powi(2)).sqrt();
         let latitude = N::from(2.0).unwrap() * f.z().atan2(d + (d.powi(2) + f.z().powi(2)).sqrt());
         let longitude = if f.y() >= N::zero() {
-            pi_half -
-            N::from(2.0).unwrap() * f.x().atan2((f.x().powi(2) + f.y().powi(2)).sqrt() + f.y())
+            pi_half
+                - N::from(2.0).unwrap()
+                    * f.x().atan2((f.x().powi(2) + f.y().powi(2)).sqrt() + f.y())
         } else {
-            -pi_half +
-            N::from(2.0).unwrap() * f.x().atan2((f.x().powi(2) + f.y().powi(2)).sqrt() - f.y())
+            -pi_half
+                + N::from(2.0).unwrap()
+                    * f.x().atan2((f.x().powi(2) + f.y().powi(2)).sqrt() - f.y())
         };
 
         WGS84 {
@@ -211,10 +218,10 @@ impl Arbitrary for WGS84<f64> {
 
 #[cfg(test)]
 mod tests {
-    use ::enu::ENU;
-    use assert::close;
-    use quickcheck::{TestResult, quickcheck};
     use super::*;
+    use assert::close;
+    use enu::ENU;
+    use quickcheck::{quickcheck, TestResult};
 
     fn create_wgs84(latitude: f32, longitude: f32, altitude: f32) -> TestResult {
         // This function is used to check that illegal latitude and longitude
@@ -254,7 +261,7 @@ mod tests {
         close(ans.latitude_degrees(), 20.0, 0.001);
     }
 
-    quickcheck!{
+    quickcheck! {
         fn distance_haversin(a: WGS84<f64>, b: WGS84<f64>) -> () {
             // Trivially true:
             close(a.distance(&b), b.distance(&a), 0.0000001);

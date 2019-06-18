@@ -1,7 +1,6 @@
 #![feature(test)]
-extern crate test;
 extern crate nav_types;
-
+extern crate test;
 
 #[cfg(test)]
 mod ecef {
@@ -33,7 +32,7 @@ mod ecef {
     }
 }
 #[cfg(test)]
-mod nvector{
+mod nvector {
     use nav_types::*;
     use test::Bencher;
     #[bench]
@@ -63,7 +62,7 @@ mod nvector{
 }
 
 #[cfg(test)]
-mod wgs84{
+mod wgs84 {
     use nav_types::*;
     use test::Bencher;
 

@@ -1,6 +1,6 @@
 extern crate nav_types;
 
-use nav_types::{WGS84, ECEF};
+use nav_types::{ECEF, WGS84};
 
 fn main() {
     // We start with a position given in latitude, longitude and altitude
