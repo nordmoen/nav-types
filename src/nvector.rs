@@ -19,10 +19,7 @@ pub struct NVector<N> {
 impl<N> NVector<N> {
     /// Create a new NVector
     pub fn new(vec: Vector3<N>, altitude: N) -> NVector<N> {
-        NVector {
-            vec: vec,
-            alt: altitude,
-        }
+        NVector { vec, alt: altitude }
     }
 }
 
@@ -54,7 +51,8 @@ impl<N: Float> From<WGS84<N>> for NVector<N> {
 }
 
 impl<N: Float> From<ECEF<N>> for NVector<N> {
-    fn from(f: ECEF<N>) -> NVector<N> {
+    #![allow(clippy::many_single_char_names)]
+    fn from(ecef: ECEF<N>) -> NVector<N> {
         // These are often used constants below:
         // a²
         let a_sq = N::from(SEMI_MAJOR_AXIS).unwrap().powi(2);
@@ -64,9 +62,9 @@ impl<N: Float> From<ECEF<N>> for NVector<N> {
         let e_4 = e_2.powi(2);
 
         // Select correct axis form ECEF vector
-        let x = f.z();
-        let y = f.y();
-        let z = -f.x();
+        let x = ecef.z();
+        let y = ecef.y();
+        let z = -ecef.x();
 
         let p = (y.powi(2) + z.powi(2)) / a_sq;
         let q = ((N::one() - e_2) / a_sq) * x.powi(2);

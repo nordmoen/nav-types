@@ -152,7 +152,8 @@ impl<N: Float> From<NVector<N>> for WGS84<N> {
 }
 
 impl<N: Float> From<ECEF<N>> for WGS84<N> {
-    fn from(f: ECEF<N>) -> WGS84<N> {
+    #![allow(clippy::many_single_char_names)]
+    fn from(ecef: ECEF<N>) -> WGS84<N> {
         // Conversion from:
         // http://download.springer.com/static/pdf/723/art%253A10.1007%252Fs00190-004-0375-4
         // .pdf?originUrl=http%3A%2F%2Flink.springer.com%2Farticle%2F10.1007%2Fs00190-004-0375-4&
@@ -170,8 +171,8 @@ impl<N: Float> From<ECEF<N>> for WGS84<N> {
         // e⁴
         let e_4 = N::from(ECCENTRICITY_SQ).unwrap().powi(2);
 
-        let p = (f.x().powi(2) + f.y().powi(2)) / a_sq;
-        let q = ((N::one() - e_2) / a_sq) * f.z().powi(2);
+        let p = (ecef.x().powi(2) + ecef.y().powi(2)) / a_sq;
+        let q = ((N::one() - e_2) / a_sq) * ecef.z().powi(2);
         let r = (p + q - e_4) / N::from(6.0).unwrap();
         let s = e_4 * ((p * q) / (N::from(4.0).unwrap() * r.powi(3)));
         let t = (N::one() + s + (s * (N::from(2.0).unwrap() + s)).sqrt()).cbrt();
@@ -179,19 +180,24 @@ impl<N: Float> From<ECEF<N>> for WGS84<N> {
         let v = (u.powi(2) + e_4 * q).sqrt();
         let w = e_2 * ((u + v - q) / (N::from(2.0).unwrap() * v));
         let k = (u + v + w.powi(2)).sqrt() - w;
-        let d = (k * (f.x().powi(2) + f.y().powi(2)).sqrt()) / (k + e_2);
+        let d = (k * (ecef.x().powi(2) + ecef.y().powi(2)).sqrt()) / (k + e_2);
         let pi_half = N::from(FRAC_PI_2).unwrap();
 
-        let altitude = ((k + e_2 - N::one()) / k) * (d.powi(2) + f.z().powi(2)).sqrt();
-        let latitude = N::from(2.0).unwrap() * f.z().atan2(d + (d.powi(2) + f.z().powi(2)).sqrt());
-        let longitude = if f.y() >= N::zero() {
+        let altitude = ((k + e_2 - N::one()) / k) * (d.powi(2) + ecef.z().powi(2)).sqrt();
+        let latitude =
+            N::from(2.0).unwrap() * ecef.z().atan2(d + (d.powi(2) + ecef.z().powi(2)).sqrt());
+        let longitude = if ecef.y() >= N::zero() {
             pi_half
                 - N::from(2.0).unwrap()
-                    * f.x().atan2((f.x().powi(2) + f.y().powi(2)).sqrt() + f.y())
+                    * ecef
+                        .x()
+                        .atan2((ecef.x().powi(2) + ecef.y().powi(2)).sqrt() + ecef.y())
         } else {
             -pi_half
                 + N::from(2.0).unwrap()
-                    * f.x().atan2((f.x().powi(2) + f.y().powi(2)).sqrt() - f.y())
+                    * ecef
+                        .x()
+                        .atan2((ecef.x().powi(2) + ecef.y().powi(2)).sqrt() - ecef.y())
         };
 
         WGS84 {

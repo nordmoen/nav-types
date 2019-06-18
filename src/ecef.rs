@@ -81,16 +81,14 @@ where
 {
     fn add_assign(&mut self, right: T) {
         let enu = T::into(right);
-        self.0 += self.r_en() * enu.access();
+        self.0 = self.0 + (self.r_en() * enu.access());
     }
 }
 
 impl<N: Float> Sub<ECEF<N>> for ECEF<N> {
     type Output = ENU<N>;
     fn sub(self, right: ECEF<N>) -> ENU<N> {
-        let vec = self.0 - right.0;
-        let mat = right.r_ne();
-        let enu = mat * vec;
+        let enu = right.r_ne() * (self.0 - right.0);
         ENU::new(enu.x, enu.y, enu.z)
     }
 }
@@ -103,8 +101,7 @@ where
     type Output = ECEF<N>;
     fn sub(self, right: T) -> ECEF<N> {
         let enu = T::into(right);
-        let vec_e = self.r_en() * enu.access();
-        ECEF(self.0 - vec_e)
+        ECEF(self.0 - (self.r_en() * enu.access()))
     }
 }
 
@@ -115,8 +112,7 @@ where
 {
     fn sub_assign(&mut self, right: T) {
         let enu = T::into(right);
-        let vec_e = self.r_en() * enu.access();
-        self.0 -= vec_e;
+        self.0 = self.0 - (self.r_en() * enu.access());
     }
 }
 
@@ -182,7 +178,7 @@ ecef_impl!(NVector);
 ecef_impl!(WGS84);
 
 impl<N: Float> From<WGS84<N>> for ECEF<N> {
-    fn from(f: WGS84<N>) -> ECEF<N> {
+    fn from(wgs: WGS84<N>) -> ECEF<N> {
         // Conversion from:
         // http://download.springer.com/static/pdf/723/art%253A10.1007%252Fs00190-004-0375-4
         // .pdf?originUrl=http%3A%2F%2Flink.springer.com%2Farticle%2F10.1007%2Fs00190-004
@@ -190,17 +186,17 @@ impl<N: Float> From<WGS84<N>> for ECEF<N> {
         // %25252Fs00190-004-0375-4.pdf%3ForiginUrl%3Dhttp%253A%252F%252Flink.springer.com
         // %252Farticle%252F10.1007%252Fs00190-004-0375-4*~hmac=4aaedb6b71f13fc9a9ce5175b
         // 4538c3ec38ddf11b77531d3bd2af75ee1fc2061
-        let a = N::from(SEMI_MAJOR_AXIS).unwrap();
+        let semi_major_axis = N::from(SEMI_MAJOR_AXIS).unwrap();
         let ecc_part = N::from(ECCENTRICITY_SQ).unwrap();
         let sin_part =
-            N::from(0.5).unwrap() * (N::one() - (N::from(2.0).unwrap() * f.latitude()).cos());
+            N::from(0.5).unwrap() * (N::one() - (N::from(2.0).unwrap() * wgs.latitude()).cos());
 
-        let n = a / (N::one() - ecc_part * sin_part).sqrt();
-        let h = f.altitude();
+        let n = semi_major_axis / (N::one() - ecc_part * sin_part).sqrt();
+        let altitude = wgs.altitude();
 
-        let x = (h + n) * f.latitude().cos() * f.longitude().cos();
-        let y = (h + n) * f.latitude().cos() * f.longitude().sin();
-        let z = (h + n - N::from(ECCENTRICITY_SQ).unwrap() * n) * f.latitude().sin();
+        let x = (altitude + n) * wgs.latitude().cos() * wgs.longitude().cos();
+        let y = (altitude + n) * wgs.latitude().cos() * wgs.longitude().sin();
+        let z = (altitude + n - N::from(ECCENTRICITY_SQ).unwrap() * n) * wgs.latitude().sin();
 
         ECEF::new(x, y, z)
     }
