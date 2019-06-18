@@ -1,6 +1,6 @@
 [package]
 name = "nav-types"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["Jørgen Nordmoen <nordmoen90@gmail.com>"]
 description = "Easily work with global positions and vectors"
 edition = "2018"
