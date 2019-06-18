@@ -121,7 +121,7 @@ impl<N> Access<Vector3<N>> for ENU<N> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ned::NED;
+    use crate::ned::NED;
 
     quickcheck! {
         fn create_enu(e: f32, n: f32, u: f32) -> () {

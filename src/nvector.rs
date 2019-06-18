@@ -92,9 +92,9 @@ impl<N: Float> From<ECEF<N>> for NVector<N> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ecef::ECEF;
+    use crate::wgs84::WGS84;
     use assert::close;
-    use ecef::ECEF;
-    use wgs84::WGS84;
 
     quickcheck! {
         fn from_wgs84(wgs: WGS84<f64>) -> () {

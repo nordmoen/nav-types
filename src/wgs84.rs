@@ -219,8 +219,8 @@ impl Arbitrary for WGS84<f64> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::enu::ENU;
     use assert::close;
-    use enu::ENU;
     use quickcheck::{quickcheck, TestResult};
 
     fn create_wgs84(latitude: f32, longitude: f32, altitude: f32) -> TestResult {

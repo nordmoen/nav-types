@@ -230,13 +230,13 @@ impl<N: Float> From<NVector<N>> for ECEF<N> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::enu::ENU;
+    use crate::ned::NED;
+    use crate::nvector::NVector;
+    use crate::wgs84::WGS84;
+    use crate::Access;
     use assert::close;
-    use enu::ENU;
     use na::Norm;
-    use ned::NED;
-    use nvector::NVector;
-    use wgs84::WGS84;
-    use Access;
 
     // Helper method to check that two ECEF positions are equal
     fn ecef_close(a: ECEF<f64>, b: ECEF<f64>) {
