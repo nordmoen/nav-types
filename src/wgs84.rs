@@ -2,7 +2,6 @@ use crate::ecef::ECEF;
 use crate::nvector::NVector;
 use num_traits::Float;
 use std::convert::From;
-use std::f32::consts::FRAC_PI_2;
 
 #[cfg(test)]
 use quickcheck::{Arbitrary, Gen};
@@ -154,56 +153,44 @@ impl<N: Float> From<NVector<N>> for WGS84<N> {
 impl<N: Float> From<ECEF<N>> for WGS84<N> {
     #![allow(clippy::many_single_char_names)]
     fn from(ecef: ECEF<N>) -> WGS84<N> {
-        // Conversion from:
-        // http://download.springer.com/static/pdf/723/art%253A10.1007%252Fs00190-004-0375-4
-        // .pdf?originUrl=http%3A%2F%2Flink.springer.com%2Farticle%2F10.1007%2Fs00190-004-0375-4&
-        // token
-        // 2=exp=1470729285~acl=%2Fstatic%2Fpdf%2F723%2Fart%25253A10.1007%25252Fs00190-004-0375-4.
-        // pdf%
-        // 3ForiginUrl%3Dhttp%253A%252F%252Flink.springer.com%252Farticle%252F10.1007%252Fs00190-
-        // 004-0375-4*~hmac=4aaedb6b71f13fc9a9ce5175b4538c3ec38ddf11b77531d3bd2af75ee1fc2061
-        //
-        // These are often used constants below:
-        // a²
-        let a_sq = N::from(SEMI_MAJOR_AXIS).unwrap().powi(2);
-        // e²
-        let e_2 = N::from(ECCENTRICITY_SQ).unwrap();
-        // e⁴
-        let e_4 = N::from(ECCENTRICITY_SQ).unwrap().powi(2);
-
-        let p = (ecef.x().powi(2) + ecef.y().powi(2)) / a_sq;
-        let q = ((N::one() - e_2) / a_sq) * ecef.z().powi(2);
-        let r = (p + q - e_4) / N::from(6.0).unwrap();
-        let s = e_4 * ((p * q) / (N::from(4.0).unwrap() * r.powi(3)));
-        let t = (N::one() + s + (s * (N::from(2.0).unwrap() + s)).sqrt()).cbrt();
-        let u = r * (N::one() + t + t.recip());
-        let v = (u.powi(2) + e_4 * q).sqrt();
-        let w = e_2 * ((u + v - q) / (N::from(2.0).unwrap() * v));
-        let k = (u + v + w.powi(2)).sqrt() - w;
-        let d = (k * (ecef.x().powi(2) + ecef.y().powi(2)).sqrt()) / (k + e_2);
-        let pi_half = N::from(FRAC_PI_2).unwrap();
-
-        let altitude = ((k + e_2 - N::one()) / k) * (d.powi(2) + ecef.z().powi(2)).sqrt();
-        let latitude =
-            N::from(2.0).unwrap() * ecef.z().atan2(d + (d.powi(2) + ecef.z().powi(2)).sqrt());
-        let longitude = if ecef.y() >= N::zero() {
-            pi_half
-                - N::from(2.0).unwrap()
-                    * ecef
-                        .x()
-                        .atan2((ecef.x().powi(2) + ecef.y().powi(2)).sqrt() + ecef.y())
-        } else {
-            -pi_half
-                + N::from(2.0).unwrap()
-                    * ecef
-                        .x()
-                        .atan2((ecef.x().powi(2) + ecef.y().powi(2)).sqrt() - ecef.y())
-        };
-
+        // https://en.wikipedia.org/wiki/Geographic_coordinate_conversion#The_application_of_Ferrari's_solution
+        let a = N::from(SEMI_MAJOR_AXIS).unwrap();
+        let b = N::from(SEMI_MINOR_AXIS).unwrap();
+        let r_squared = (ecef.x() * ecef.x()) + (ecef.y() * ecef.y());
+        let r = r_squared.sqrt();
+        let z_squared = ecef.z() * ecef.z();
+        let z = z_squared.sqrt();
+        let a_squared = a * a;
+        let b_squared = b * b;
+        let e_squared = N::one() - (b_squared / a_squared);
+        let e_dot_squared = (a_squared - b_squared) / b_squared;
+        let f = N::from(54).unwrap() * b_squared * z_squared;
+        let g = r_squared + ((N::one() - e_squared) * z_squared)
+            - (e_squared * (a_squared - b_squared));
+        let g_squared = g * g;
+        let c = (e_squared * e_squared * f * r_squared) / (g * g_squared);
+        let s = (N::one() + c + ((c * c) + c + c).sqrt()).powf(N::one() / N::from(3).unwrap());
+        let p = f
+            / (N::from(3).unwrap()
+                * (s + (N::one() / s) + N::one()).powf(N::from(2).unwrap())
+                * g_squared);
+        let q = (N::one() + (N::from(2).unwrap() * e_squared * e_squared * p)).sqrt();
+        let r_0 = (-(p * e_squared * r) / (N::one() + q))
+            + (a_squared / N::from(2).unwrap() * (N::one() + (N::one() / q))
+                - ((p * (N::one() - e_squared) * z_squared) / (q * (N::one() + q)))
+                - (p * r_squared / N::from(2).unwrap()))
+            .sqrt();
+        let r_minus_e_squared_r0_squared = (r - (e_squared * r_0)).powf(N::from(2).unwrap());
+        let u = (r_minus_e_squared_r0_squared + z_squared).sqrt();
+        let v = (r_minus_e_squared_r0_squared + ((N::one() - e_squared) * z_squared)).sqrt();
+        let z_0 = (b_squared * z) / (a * v);
+        let h = u * (N::one() - (b_squared / (a * v)));
+        let phi = ecef.z().signum() * ((z + (e_dot_squared * z_0)) / r).atan().abs();
+        let lambda = ecef.y().atan2(ecef.x());
         WGS84 {
-            lat: latitude,
-            lon: longitude,
-            alt: altitude,
+            lat: phi,
+            lon: lambda,
+            alt: h,
         }
     }
 }
@@ -274,7 +261,7 @@ mod tests {
 
         for &place in [oslo, stockholm].iter() {
             let distance = place.distance(&WGS84::from(ECEF::from(place)));
-            close(distance, 0.0, 1.0);
+            close(distance, 0.0, 0.00000001);
         }
     }
 
