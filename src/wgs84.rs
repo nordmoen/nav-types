@@ -170,9 +170,11 @@ impl<N: Float> From<ECEF<N>> for WGS84<N> {
         let g_squared = g * g;
         let c = (e_squared * e_squared * f * r_squared) / (g * g_squared);
         let s = (N::one() + c + ((c * c) + c + c).sqrt()).powf(N::one() / N::from(3).unwrap());
+        let s_plus_one_over_s_plus_one = s + (N::one() / s) + N::one();
         let p = f
             / (N::from(3).unwrap()
-                * (s + (N::one() / s) + N::one()).powf(N::from(2).unwrap())
+                * s_plus_one_over_s_plus_one
+                * s_plus_one_over_s_plus_one
                 * g_squared);
         let q = (N::one() + (N::from(2).unwrap() * e_squared * e_squared * p)).sqrt();
         let r_0 = (-(p * e_squared * r) / (N::one() + q))
@@ -180,7 +182,8 @@ impl<N: Float> From<ECEF<N>> for WGS84<N> {
                 - ((p * (N::one() - e_squared) * z_squared) / (q * (N::one() + q)))
                 - (p * r_squared / N::from(2).unwrap()))
             .sqrt();
-        let r_minus_e_squared_r0_squared = (r - (e_squared * r_0)).powf(N::from(2).unwrap());
+        let r_minus_e_squared_r0 = r - (e_squared * r_0);
+        let r_minus_e_squared_r0_squared = r_minus_e_squared_r0 * r_minus_e_squared_r0;
         let u = (r_minus_e_squared_r0_squared + z_squared).sqrt();
         let v = (r_minus_e_squared_r0_squared + ((N::one() - e_squared) * z_squared)).sqrt();
         let z_0 = (b_squared * z) / (a * v);
