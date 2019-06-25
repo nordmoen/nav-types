@@ -41,7 +41,6 @@
 //! and `ENU` is quite straight forward and used in many contexts.
 
 extern crate nalgebra as na;
-extern crate num_traits;
 
 #[cfg(test)]
 #[macro_use]

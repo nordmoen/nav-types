@@ -1,6 +1,6 @@
 use crate::ecef::ECEF;
 use crate::nvector::NVector;
-use num_traits::Float;
+use na::RealField;
 use std::convert::From;
 
 #[cfg(test)]
@@ -29,7 +29,10 @@ pub struct WGS84<N> {
     alt: N,
 }
 
-impl<N: Float> WGS84<N> {
+impl<N: RealField> WGS84<N>
+where
+    f64: From<N>,
+{
     /// Create a new WGS84 position
     ///
     /// # Arguments
@@ -42,16 +45,16 @@ impl<N: Float> WGS84<N> {
     /// WGS84 ellipsoid.
     pub fn new(latitude: N, longitude: N, altitude: N) -> WGS84<N> {
         assert!(
-            latitude.abs() <= N::from(90.0).unwrap(),
+            latitude.abs() <= N::from_f64(90.0).unwrap(),
             "Latitude must be in the range [-90, 90]"
         );
         assert!(
-            longitude.abs() <= N::from(180.0).unwrap(),
+            longitude.abs() <= N::from_f64(180.0).unwrap(),
             "Longitude must be in the range [-180, 180]"
         );
         WGS84 {
-            lat: latitude.to_radians(),
-            lon: longitude.to_radians(),
+            lat: N::from_f64(f64::from(latitude).to_radians()).unwrap(),
+            lon: N::from_f64(f64::from(longitude).to_radians()).unwrap(),
             alt: altitude,
         }
     }
@@ -63,7 +66,9 @@ impl<N: Float> WGS84<N> {
     /// - `longitude` in degrees
     /// - `altitude` in meters
     pub fn try_new(latitude: N, longitude: N, altitude: N) -> Option<WGS84<N>> {
-        if latitude.abs() <= N::from(90.0).unwrap() && longitude.abs() <= N::from(180.0).unwrap() {
+        if latitude.abs() <= N::from_f64(90.0).unwrap()
+            && longitude.abs() <= N::from_f64(180.0).unwrap()
+        {
             Some(WGS84::new(latitude, longitude, altitude))
         } else {
             None
@@ -72,12 +77,12 @@ impl<N: Float> WGS84<N> {
 
     /// Get latitude of position, in degrees
     pub fn latitude_degrees(&self) -> N {
-        self.lat.to_degrees()
+        N::from_f64(f64::from(self.lat).to_degrees()).unwrap()
     }
 
     /// Get longitude of position, in degrees
     pub fn longitude_degrees(&self) -> N {
-        self.lon.to_degrees()
+        N::from_f64(f64::from(self.lon).to_degrees()).unwrap()
     }
 
     /// Distance between two WGS84 positions
@@ -100,13 +105,13 @@ impl<N: Float> WGS84<N> {
         let delta_lat = other.latitude() - self.latitude();
         let delta_lon = other.longitude() - self.longitude();
 
-        let a = (delta_lat / N::from(2.0).unwrap()).sin().powi(2)
+        let a = (delta_lat / N::from_f64(2.0).unwrap()).sin().powi(2)
             + self.latitude().cos()
                 * other.latitude().cos()
-                * (delta_lon / N::from(2.0).unwrap()).sin().powi(2);
-        let c = N::from(2.0).unwrap() * a.sqrt().asin();
+                * (delta_lon / N::from_f64(2.0).unwrap()).sin().powi(2);
+        let c = N::from_f64(2.0).unwrap() * a.sqrt().asin();
 
-        N::from(SEMI_MAJOR_AXIS).unwrap() * c + (self.altitude() - other.altitude()).abs()
+        N::from_f64(SEMI_MAJOR_AXIS).unwrap() * c + (self.altitude() - other.altitude()).abs()
     }
 }
 
@@ -125,7 +130,7 @@ impl<N: Copy> WGS84<N> {
     }
 }
 
-impl<N: Float> From<NVector<N>> for WGS84<N> {
+impl<N: RealField> From<NVector<N>> for WGS84<N> {
     fn from(f: NVector<N>) -> WGS84<N> {
         // This implementation defines the ECEF coordinate system to have the Z
         // axes point directly north, this affects the way which N-vectors are
@@ -150,12 +155,12 @@ impl<N: Float> From<NVector<N>> for WGS84<N> {
     }
 }
 
-impl<N: Float> From<ECEF<N>> for WGS84<N> {
+impl<N: RealField> From<ECEF<N>> for WGS84<N> {
     #![allow(clippy::many_single_char_names)]
     fn from(ecef: ECEF<N>) -> WGS84<N> {
         // https://en.wikipedia.org/wiki/Geographic_coordinate_conversion#The_application_of_Ferrari's_solution
-        let a = N::from(SEMI_MAJOR_AXIS).unwrap();
-        let b = N::from(SEMI_MINOR_AXIS).unwrap();
+        let a = N::from_f64(SEMI_MAJOR_AXIS).unwrap();
+        let b = N::from_f64(SEMI_MINOR_AXIS).unwrap();
         let r_squared = (ecef.x() * ecef.x()) + (ecef.y() * ecef.y());
         let r = r_squared.sqrt();
         let z_squared = ecef.z() * ecef.z();
@@ -164,23 +169,24 @@ impl<N: Float> From<ECEF<N>> for WGS84<N> {
         let b_squared = b * b;
         let e_squared = N::one() - (b_squared / a_squared);
         let e_dot_squared = (a_squared - b_squared) / b_squared;
-        let f = N::from(54).unwrap() * b_squared * z_squared;
+        let f = N::from_f64(54.0).unwrap() * b_squared * z_squared;
         let g = r_squared + ((N::one() - e_squared) * z_squared)
             - (e_squared * (a_squared - b_squared));
         let g_squared = g * g;
         let c = (e_squared * e_squared * f * r_squared) / (g * g_squared);
-        let s = (N::one() + c + ((c * c) + c + c).sqrt()).powf(N::one() / N::from(3).unwrap());
+        let s =
+            (N::one() + c + ((c * c) + c + c).sqrt()).powf(N::one() / N::from_f64(3.0).unwrap());
         let s_plus_one_over_s_plus_one = s + (N::one() / s) + N::one();
         let p = f
-            / (N::from(3).unwrap()
+            / (N::from_f64(3.0).unwrap()
                 * s_plus_one_over_s_plus_one
                 * s_plus_one_over_s_plus_one
                 * g_squared);
-        let q = (N::one() + (N::from(2).unwrap() * e_squared * e_squared * p)).sqrt();
+        let q = (N::one() + (N::from_f64(2.0).unwrap() * e_squared * e_squared * p)).sqrt();
         let r_0 = (-(p * e_squared * r) / (N::one() + q))
-            + (a_squared / N::from(2).unwrap() * (N::one() + (N::one() / q))
+            + (a_squared / N::from_f64(2.0).unwrap() * (N::one() + (N::one() / q))
                 - ((p * (N::one() - e_squared) * z_squared) / (q * (N::one() + q)))
-                - (p * r_squared / N::from(2).unwrap()))
+                - (p * r_squared / N::from_f64(2.0).unwrap()))
             .sqrt();
         let r_minus_e_squared_r0 = r - (e_squared * r_0);
         let r_minus_e_squared_r0_squared = r_minus_e_squared_r0 * r_minus_e_squared_r0;

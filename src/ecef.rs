@@ -2,8 +2,7 @@ use crate::enu::ENU;
 use crate::nvector::NVector;
 use crate::wgs84::{ECCENTRICITY_SQ, SEMI_MAJOR_AXIS, SEMI_MINOR_AXIS, WGS84};
 use crate::Access;
-use na::{BaseFloat, Matrix3, Norm, Point3, Transpose};
-use num_traits::Float;
+use na::{Matrix3, Point3, RealField};
 use std::convert::{From, Into};
 use std::ops::{Add, AddAssign, Sub, SubAssign};
 
@@ -12,16 +11,16 @@ use std::ops::{Add, AddAssign, Sub, SubAssign};
 /// This struct represents a position in the ECEF coordinate system.
 /// See: [ECEF](https://en.wikipedia.org/wiki/ECEF) for general description.
 #[derive(Debug, Copy, Clone, PartialEq)]
-pub struct ECEF<N>(Point3<N>);
+pub struct ECEF<N: RealField>(Point3<N>);
 
-impl<N> ECEF<N> {
+impl<N: RealField> ECEF<N> {
     /// Create a new ECEF position
     pub fn new(x: N, y: N, z: N) -> ECEF<N> {
         ECEF(Point3::new(x, y, z))
     }
 }
 
-impl<N: Copy> ECEF<N> {
+impl<N: RealField> ECEF<N> {
     /// Get the X component of this position
     pub fn x(&self) -> N {
         self.0.x
@@ -38,7 +37,7 @@ impl<N: Copy> ECEF<N> {
     }
 }
 
-impl<N: Float> ECEF<N> {
+impl<N: RealField> ECEF<N> {
     /// Create a rotation matrix from ECEF frame to ENU frame
     fn r_enu_from_ecef(self) -> Matrix3<N> {
         let wgs = WGS84::from(self);
@@ -63,7 +62,7 @@ impl<N: Float> ECEF<N> {
     /// Euclidean distance between two ECEF positions
     pub fn distance(&self, other: &ECEF<N>) -> N
     where
-        N: BaseFloat,
+        N: RealField,
     {
         (other.0 - self.0).norm()
     }
@@ -71,7 +70,7 @@ impl<N: Float> ECEF<N> {
 
 impl<N, T> Add<T> for ECEF<N>
 where
-    N: Float,
+    N: RealField,
     T: Into<ENU<N>>,
 {
     type Output = ECEF<N>;
@@ -84,7 +83,7 @@ where
 
 impl<N, T> AddAssign<T> for ECEF<N>
 where
-    N: Float + AddAssign,
+    N: RealField + AddAssign,
     T: Into<ENU<N>>,
 {
     fn add_assign(&mut self, right: T) {
@@ -93,7 +92,7 @@ where
     }
 }
 
-impl<N: Float> Sub<ECEF<N>> for ECEF<N> {
+impl<N: RealField> Sub<ECEF<N>> for ECEF<N> {
     type Output = ENU<N>;
     fn sub(self, right: ECEF<N>) -> ENU<N> {
         let enu = right.r_enu_from_ecef() * (self.0 - right.0);
@@ -103,7 +102,7 @@ impl<N: Float> Sub<ECEF<N>> for ECEF<N> {
 
 impl<N, T> Sub<T> for ECEF<N>
 where
-    N: Float,
+    N: RealField,
     T: Into<ENU<N>>,
 {
     type Output = ECEF<N>;
@@ -115,7 +114,7 @@ where
 
 impl<N, T> SubAssign<T> for ECEF<N>
 where
-    N: Float + SubAssign,
+    N: RealField + SubAssign,
     T: Into<ENU<N>>,
 {
     fn sub_assign(&mut self, right: T) {
@@ -130,7 +129,7 @@ macro_rules! ecef_impl {
     ($T:ident) => {
         impl<N, T> Add<T> for $T<N>
         where
-            N: Float,
+            N: RealField,
             T: Into<ENU<N>>,
         {
             type Output = $T<N>;
@@ -141,7 +140,7 @@ macro_rules! ecef_impl {
 
         impl<N, T> AddAssign<T> for $T<N>
         where
-            N: Float + AddAssign,
+            N: RealField + AddAssign,
             T: Into<ENU<N>>,
         {
             fn add_assign(&mut self, right: T) {
@@ -151,7 +150,7 @@ macro_rules! ecef_impl {
 
         impl<N, T> Sub<T> for $T<N>
         where
-            N: Float,
+            N: RealField,
             T: Into<ENU<N>>,
         {
             type Output = $T<N>;
@@ -160,7 +159,7 @@ macro_rules! ecef_impl {
             }
         }
 
-        impl<N: Float> Sub<$T<N>> for $T<N> {
+        impl<N: RealField> Sub<$T<N>> for $T<N> {
             type Output = ENU<N>;
             fn sub(self, right: $T<N>) -> ENU<N> {
                 ECEF::from(self) - ECEF::from(right)
@@ -169,7 +168,7 @@ macro_rules! ecef_impl {
 
         impl<N, T> SubAssign<T> for $T<N>
         where
-            N: Float + SubAssign,
+            N: RealField + SubAssign,
             T: Into<ENU<N>>,
         {
             fn sub_assign(&mut self, right: T) {
@@ -185,36 +184,36 @@ ecef_impl!(NVector);
 // The only way to work with Latitude/Longitude is to convert to ECEF
 ecef_impl!(WGS84);
 
-impl<N: Float> From<WGS84<N>> for ECEF<N> {
+impl<N: RealField> From<WGS84<N>> for ECEF<N> {
     fn from(wgs: WGS84<N>) -> ECEF<N> {
         // Conversion from:
         // https://doi.org/10.1007/s00190-004-0375-4
-        let semi_major_axis = N::from(SEMI_MAJOR_AXIS).unwrap();
-        let ecc_part = N::from(ECCENTRICITY_SQ).unwrap();
-        let sin_part =
-            N::from(0.5).unwrap() * (N::one() - (N::from(2.0).unwrap() * wgs.latitude()).cos());
+        let semi_major_axis = N::from_f64(SEMI_MAJOR_AXIS).unwrap();
+        let ecc_part = N::from_f64(ECCENTRICITY_SQ).unwrap();
+        let sin_part = N::from_f64(0.5).unwrap()
+            * (N::one() - (N::from_f64(2.0).unwrap() * wgs.latitude()).cos());
 
         let n = semi_major_axis / (N::one() - ecc_part * sin_part).sqrt();
         let altitude = wgs.altitude();
 
         let x = (altitude + n) * wgs.latitude().cos() * wgs.longitude().cos();
         let y = (altitude + n) * wgs.latitude().cos() * wgs.longitude().sin();
-        let z = (altitude + n - N::from(ECCENTRICITY_SQ).unwrap() * n) * wgs.latitude().sin();
+        let z = (altitude + n - N::from_f64(ECCENTRICITY_SQ).unwrap() * n) * wgs.latitude().sin();
 
         ECEF::new(x, y, z)
     }
 }
 
-impl<N: Float> From<NVector<N>> for ECEF<N> {
+impl<N: RealField> From<NVector<N>> for ECEF<N> {
     fn from(f: NVector<N>) -> ECEF<N> {
         // Constants used for calculation
         let x = f.vector().z;
         let y = f.vector().y;
         let z = -f.vector().x;
-        let a_over_b =
-            N::from(SEMI_MAJOR_AXIS).unwrap().powi(2) / N::from(SEMI_MINOR_AXIS).unwrap().powi(2);
+        let a_over_b = N::from_f64(SEMI_MAJOR_AXIS).unwrap().powi(2)
+            / N::from_f64(SEMI_MINOR_AXIS).unwrap().powi(2);
         // Multiplication part
-        let mul = N::from(SEMI_MINOR_AXIS).unwrap()
+        let mul = N::from_f64(SEMI_MINOR_AXIS).unwrap()
             / (x.powi(2) + a_over_b * y.powi(2) + a_over_b * z.powi(2)).sqrt();
         // NOTE: The following has been rearranged to follow ECEF convention
         // that Z points towards the north pole
@@ -235,7 +234,6 @@ mod tests {
     use crate::wgs84::WGS84;
     use crate::Access;
     use assert::close;
-    use na::Norm;
 
     // Helper method to check that two ECEF positions are equal
     fn ecef_close(a: ECEF<f64>, b: ECEF<f64>) {
@@ -290,13 +288,13 @@ mod tests {
             ecef_close(ecef_b, ecef_b2);
         }
 
-        fn distance(a: WGS84<f64>, b: WGS84<f64>) -> () {
-            // Test that the vector A->B and B->A is of equal length
-            let dist_ab = (ECEF::from(b) - ECEF::from(a)).norm();
-            let dist_ba = (ECEF::from(a) - ECEF::from(b)).norm();
+        // fn distance(a: WGS84<f64>, b: WGS84<f64>) -> () {
+        //     // Test that the vector A->B and B->A is of equal length
+        //     let dist_ab = (ECEF::from(b) - ECEF::from(a)).norm();
+        //     let dist_ba = (ECEF::from(a) - ECEF::from(b)).norm();
 
-            close(dist_ab, dist_ba, 0.000001);
-        }
+        //     close(dist_ab, dist_ba, 0.000001);
+        // }
 
         fn add_ned(a: WGS84<f64>, n: f64, e: f64, d: f64) -> () {
             // Test that adding a random NED vector to an ECEF position

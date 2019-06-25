@@ -1,7 +1,6 @@
 use crate::ecef::ECEF;
 use crate::wgs84::{ECCENTRICITY_SQ, SEMI_MAJOR_AXIS, WGS84};
-use na::Vector3;
-use num_traits::Float;
+use na::{RealField, Vector3};
 use std::convert::From;
 
 /// N-Vector position
@@ -11,19 +10,19 @@ use std::convert::From;
 /// the poles compared to WGS84 Latitude, Longitude format.
 /// See: [nvector](http://www.navlab.net/nvector/) for detailed information.
 #[derive(PartialEq, Clone, Copy, Debug)]
-pub struct NVector<N> {
+pub struct NVector<N: RealField> {
     vec: Vector3<N>,
     alt: N,
 }
 
-impl<N> NVector<N> {
+impl<N: RealField> NVector<N> {
     /// Create a new NVector
     pub fn new(vec: Vector3<N>, altitude: N) -> NVector<N> {
         NVector { vec, alt: altitude }
     }
 }
 
-impl<N: Copy> NVector<N> {
+impl<N: RealField + Copy> NVector<N> {
     /// Get the vector component of this position
     pub fn vector(&self) -> Vector3<N> {
         self.vec
@@ -35,7 +34,7 @@ impl<N: Copy> NVector<N> {
     }
 }
 
-impl<N: Float> From<WGS84<N>> for NVector<N> {
+impl<N: RealField> From<WGS84<N>> for NVector<N> {
     fn from(f: WGS84<N>) -> NVector<N> {
         // This implementation defines the ECEF coordinate system to have the Z
         // axes point directly north, this affects the way which N-vectors are
@@ -50,14 +49,14 @@ impl<N: Float> From<WGS84<N>> for NVector<N> {
     }
 }
 
-impl<N: Float> From<ECEF<N>> for NVector<N> {
+impl<N: RealField> From<ECEF<N>> for NVector<N> {
     #![allow(clippy::many_single_char_names)]
     fn from(ecef: ECEF<N>) -> NVector<N> {
         // These are often used constants below:
         // a²
-        let a_sq = N::from(SEMI_MAJOR_AXIS).unwrap().powi(2);
+        let a_sq = N::from_f64(SEMI_MAJOR_AXIS).unwrap().powi(2);
         // e²
-        let e_2 = N::from(ECCENTRICITY_SQ).unwrap();
+        let e_2 = N::from_f64(ECCENTRICITY_SQ).unwrap();
         // e⁴
         let e_4 = e_2.powi(2);
 
@@ -68,12 +67,12 @@ impl<N: Float> From<ECEF<N>> for NVector<N> {
 
         let p = (y.powi(2) + z.powi(2)) / a_sq;
         let q = ((N::one() - e_2) / a_sq) * x.powi(2);
-        let r = (p + q - e_4) / N::from(6.0).unwrap();
-        let s = (e_4 * p * q) / (N::from(4.0).unwrap() * r.powi(3));
-        let t = (N::one() + s + (s * (N::from(2.0).unwrap() + s)).sqrt()).cbrt();
+        let r = (p + q - e_4) / N::from_f64(6.0).unwrap();
+        let s = (e_4 * p * q) / (N::from_f64(4.0).unwrap() * r.powi(3));
+        let t = (N::one() + s + (s * (N::from_f64(2.0).unwrap() + s)).sqrt()).cbrt();
         let u = r * (N::one() + t + t.recip());
         let v = (u.powi(2) + e_4 * q).sqrt();
-        let w = e_2 * ((u + v - q) / (N::from(2.0).unwrap() * v));
+        let w = e_2 * ((u + v - q) / (N::from_f64(2.0).unwrap() * v));
         let k = (u + v + w.powi(2)).sqrt() - w;
         let d = (k * (y.powi(2) + z.powi(2)).sqrt()) / (k + e_2);
 

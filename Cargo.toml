@@ -13,9 +13,8 @@ keywords = ["nav", "navigation", "ecef", "latitude", "wgs84"]
 license = "MIT"
 
 [dependencies]
-clippy = { version = "0.0.112", optional = true }
-nalgebra = "0.10"
-num-traits = "0.1.36"
+clippy = { version = "0.0.212", optional = true }
+nalgebra = "0.18"
 
 [dev-dependencies]
 assert = "0.7"

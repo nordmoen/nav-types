@@ -1,5 +1,5 @@
 use crate::Access;
-use na::{BaseFloat, Norm, Vector3};
+use na::{RealField, Vector3};
 use std::convert::Into;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
@@ -14,16 +14,21 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 /// can be converted to ENU with a `From` implementation will automatically
 /// be able to work with ENU at the cost of the `Into` conversion.
 #[derive(Debug, Copy, Clone, PartialEq)]
-pub struct ENU<N>(Vector3<N>);
+pub struct ENU<N: RealField>(Vector3<N>);
 
-impl<N> ENU<N> {
-    /// Crate a new ENU vector
+impl<N: RealField> ENU<N> {
+    /// Create a new ENU vector
     pub fn new(e: N, n: N, u: N) -> ENU<N> {
         ENU(Vector3::new(e, n, u))
     }
+
+    /// Computes the L2 (Euclidean) norm of this vector
+    pub fn norm(&self) -> N {
+        self.0.norm()
+    }
 }
 
-impl<N: Copy> ENU<N> {
+impl<N: RealField + Copy> ENU<N> {
     /// Get the East component of this vector
     pub fn east(&self) -> N {
         self.0.x
@@ -40,79 +45,59 @@ impl<N: Copy> ENU<N> {
     }
 }
 
-impl<N: Copy + Add<N, Output = N>, T: Into<ENU<N>>> Add<T> for ENU<N> {
+impl<N: RealField + Copy + Add<N, Output = N>, T: Into<ENU<N>>> Add<T> for ENU<N> {
     type Output = ENU<N>;
     fn add(self, right: T) -> Self::Output {
         ENU(self.0 + right.into().0)
     }
 }
 
-impl<N: Copy + AddAssign<N>, T: Into<ENU<N>>> AddAssign<T> for ENU<N> {
+impl<N: RealField + Copy + AddAssign<N>, T: Into<ENU<N>>> AddAssign<T> for ENU<N> {
     fn add_assign(&mut self, right: T) {
         self.0 += right.into().0
     }
 }
 
-impl<N: Copy + Sub<N, Output = N>, T: Into<ENU<N>>> Sub<T> for ENU<N> {
+impl<N: RealField + Copy + Sub<N, Output = N>, T: Into<ENU<N>>> Sub<T> for ENU<N> {
     type Output = ENU<N>;
     fn sub(self, right: T) -> Self::Output {
         ENU(self.0 - right.into().0)
     }
 }
 
-impl<N: Copy + SubAssign<N>, T: Into<ENU<N>>> SubAssign<T> for ENU<N> {
+impl<N: RealField + Copy + SubAssign<N>, T: Into<ENU<N>>> SubAssign<T> for ENU<N> {
     fn sub_assign(&mut self, right: T) {
         self.0 -= right.into().0
     }
 }
 
-impl<N: Copy + Mul<N, Output = N>> Mul<N> for ENU<N> {
+impl<N: RealField + Copy + Mul<N, Output = N>> Mul<N> for ENU<N> {
     type Output = ENU<N>;
     fn mul(self, right: N) -> Self::Output {
         ENU(self.0 * right)
     }
 }
 
-impl<N: Copy + MulAssign<N>> MulAssign<N> for ENU<N> {
+impl<N: RealField + Copy + MulAssign<N>> MulAssign<N> for ENU<N> {
     fn mul_assign(&mut self, right: N) {
         self.0 *= right
     }
 }
 
-impl<N: Copy + Div<N, Output = N>> Div<N> for ENU<N> {
+impl<N: RealField + Copy + Div<N, Output = N>> Div<N> for ENU<N> {
     type Output = ENU<N>;
     fn div(self, right: N) -> Self::Output {
         ENU(self.0 / right)
     }
 }
 
-impl<N: Copy + DivAssign<N>> DivAssign<N> for ENU<N> {
+impl<N: RealField + Copy + DivAssign<N>> DivAssign<N> for ENU<N> {
     fn div_assign(&mut self, right: N) {
         self.0 /= right
     }
 }
 
-impl<N: BaseFloat> Norm for ENU<N> {
-    type NormType = N;
-
-    fn norm_squared(&self) -> N {
-        self.0.norm_squared()
-    }
-    fn normalize(&self) -> Self {
-        ENU(self.0.normalize())
-    }
-    fn normalize_mut(&mut self) -> N {
-        self.0.normalize_mut()
-    }
-    fn try_normalize(&self, min_norm: Self::NormType) -> Option<Self> {
-        self.0.try_normalize(min_norm).map(ENU)
-    }
-    fn try_normalize_mut(&mut self, min_norm: Self::NormType) -> Option<Self::NormType> {
-        self.0.try_normalize_mut(min_norm)
-    }
-}
-
-impl<N> Access<Vector3<N>> for ENU<N> {
+impl<N: RealField> Access<Vector3<N>> for ENU<N> {
     fn access(self) -> Vector3<N> {
         self.0
     }

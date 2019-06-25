@@ -1,7 +1,6 @@
 extern crate nalgebra as na;
 extern crate nav_types;
 
-use na::{Cross, Dot, Norm};
 use nav_types::{NVector, WGS84};
 
 static EARTH_RADIUS: f64 = 6371008.8;
