@@ -188,12 +188,7 @@ ecef_impl!(WGS84);
 impl<N: Float> From<WGS84<N>> for ECEF<N> {
     fn from(wgs: WGS84<N>) -> ECEF<N> {
         // Conversion from:
-        // http://download.springer.com/static/pdf/723/art%253A10.1007%252Fs00190-004-0375-4
-        // .pdf?originUrl=http%3A%2F%2Flink.springer.com%2Farticle%2F10.1007%2Fs00190-004
-        // -0375-4&token2=exp=1470729285~acl=%2Fstatic%2Fpdf%2F723%2Fart%25253A10.1007
-        // %25252Fs00190-004-0375-4.pdf%3ForiginUrl%3Dhttp%253A%252F%252Flink.springer.com
-        // %252Farticle%252F10.1007%252Fs00190-004-0375-4*~hmac=4aaedb6b71f13fc9a9ce5175b
-        // 4538c3ec38ddf11b77531d3bd2af75ee1fc2061
+        // https://doi.org/10.1007/s00190-004-0375-4
         let semi_major_axis = N::from(SEMI_MAJOR_AXIS).unwrap();
         let ecc_part = N::from(ECCENTRICITY_SQ).unwrap();
         let sin_part =
