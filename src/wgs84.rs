@@ -174,8 +174,7 @@ impl<N: RealField> From<ECEF<N>> for WGS84<N> {
             - (e_squared * (a_squared - b_squared));
         let g_squared = g * g;
         let c = (e_squared * e_squared * f * r_squared) / (g * g_squared);
-        let s =
-            (N::one() + c + ((c * c) + c + c).sqrt()).powf(N::one() / N::from_f64(3.0).unwrap());
+        let s = (N::one() + c + ((c * c) + c + c).sqrt()).cbrt();
         let s_plus_one_over_s_plus_one = s + (N::one() / s) + N::one();
         let p = f
             / (N::from_f64(3.0).unwrap()
