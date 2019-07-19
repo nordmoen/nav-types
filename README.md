@@ -10,7 +10,7 @@ have meaning as geographic entities.
 ## Example
 Place this in your `Cargo.toml`
 ```toml
-nav-types = "0.4.1"
+nav-types = "0.4.2"
 ```
 
 and use it to calculate vectors and position:
