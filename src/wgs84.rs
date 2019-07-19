@@ -206,6 +206,7 @@ impl<N: RealField> From<ECEF<N>> for WGS84<N> {
 #[cfg(test)]
 impl Arbitrary for WGS84<f64> {
     fn arbitrary<G: Gen>(g: &mut G) -> WGS84<f64> {
+        use rand::Rng;
         let lat = g.gen_range(-90.0, 90.0);
         let lon = g.gen_range(-180.0, 180.0);
         // NOTE: Minimum altitude is radius of the earth, however, due to

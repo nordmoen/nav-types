@@ -13,12 +13,13 @@ keywords = ["nav", "navigation", "ecef", "latitude", "wgs84"]
 license = "MIT"
 
 [dependencies]
-clippy = { version = "0.0.212", optional = true }
+clippy = { version = "0.0.302", optional = true }
 nalgebra = "0.18"
 
 [dev-dependencies]
 assert = "0.7"
-quickcheck = "0.4"
+quickcheck = "0.8.5"
+rand = "0.6.5"
 
 [features]
 default = []
