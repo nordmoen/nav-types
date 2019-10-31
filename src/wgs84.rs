@@ -293,7 +293,7 @@ mod tests {
         let stockholm: WGS84<f64> = WGS84::new(59.329444, 18.068611, 0.0);
         let stockholm_high: WGS84<f64> = WGS84::new(59.329444, 18.068611, 100.0);
 
-        for &(place, place_high) in [(oslo, oslo_high), (stockholm, stockholm_high)].into_iter() {
+        for &(place, place_high) in [(oslo, oslo_high), (stockholm, stockholm_high)].iter() {
             let distance =
                 ECEF::from(place_high).distance(&(ECEF::from(place) + ENU::new(0.0, 0.0, 100.0)));
             close(distance, 0.0, 0.00001);
