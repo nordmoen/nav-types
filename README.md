@@ -1,4 +1,5 @@
 # nav-types
+
 [![Build
 Status](https://travis-ci.org/nordmoen/nav-types.svg?branch=master)](https://travis-ci.org/nordmoen/nav-types) [![Crates.io](https://img.shields.io/crates/v/nav-types.svg?maxAge=2592000)](https://crates.io/crates/nav-types)
 
@@ -8,9 +9,11 @@ have meaning as geographic entities.
 [Documentation](https://nordmoen.github.io/nav-types)
 
 ## Example
+
 Place this in your `Cargo.toml`
+
 ```toml
-nav-types = "0.4.2"
+nav-types = "0.4.3"
 ```
 
 and use it to calculate vectors and position:
@@ -28,6 +31,7 @@ println!("Distance between a and b: {:.2}m", a.distance(&b));
 
 All position formats can work with vectors as long as the vectors are defined in
 some coordinate system.
+
 ```rust
 use nav_types::{WGS84, ENU};
 
@@ -43,10 +47,12 @@ let pos_a_10m_up_2 = pos_a + ned_vec;
 ```
 
 ## Note about usage
+
 The source is based on [`nalgebra`](http://nalgebra.org) and some methods are
 only available if importing traits from `nalgebra`.
 
 ### Performance
+
 Currently the only way to calculate vectors between latitude and longitude
 positions is to convert to `ECEF` format and calculate the difference there.
 This conversion happens behind the scenes and for this reason could be a source
@@ -69,4 +75,3 @@ test nvector::from_wgs84 ... bench:         382 ns/iter (+/- 16)
 test wgs84::add_vector   ... bench:       2,154 ns/iter (+/- 302)
 test wgs84::difference   ... bench:       2,305 ns/iter (+/- 304)
 ```
-
