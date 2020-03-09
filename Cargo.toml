@@ -1,6 +1,6 @@
 [package]
 name = "nav-types"
-version = "0.4.3"
+version = "0.4.4"
 authors = ["Jørgen Nordmoen <nordmoen90@gmail.com>"]
 description = "Easily work with global positions and vectors"
 edition = "2018"
@@ -14,7 +14,7 @@ license = "MIT"
 
 [dependencies]
 clippy = { version = "0.0.302", optional = true }
-nalgebra = "0.19"
+nalgebra = "0.20"
 
 [dev-dependencies]
 assert = "0.7"
