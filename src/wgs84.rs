@@ -87,11 +87,11 @@ where
     /// WGS84 ellipsoid.
     pub fn new_rad(latitude: N, longitude: N, altitude: N) -> WGS84<N> {
         assert!(
-            latitude.abs() <= N::from_f64(f64::FRAC_PI_2).unwrap(),
+            latitude.abs() <= N::from_f64(std::f64::consts::FRAC_PI_2).unwrap(),
             "Latitude must be in the range [-π/2, π/2]"
         );
         assert!(
-            longitude.abs() <= N::from_f64(f64::PI).unwrap(),
+            longitude.abs() <= N::from_f64(std::f64::consts::PI).unwrap(),
             "Longitude must be in the range [-π, π]"
         );
         WGS84 {
@@ -108,8 +108,8 @@ where
     /// - `longitude` in radians
     /// - `altitude` in meters
     pub fn try_new_rad(latitude: N, longitude: N, altitude: N) -> Option<WGS84<N>> {
-        if latitude.abs() <= N::from_f64(f64::FRAC_PI_2).unwrap()
-            && longitude.abs() <= N::from_f64(f64::PI).unwrap()
+        if latitude.abs() <= N::from_f64(std::f64::consts::FRAC_PI_2).unwrap()
+            && longitude.abs() <= N::from_f64(std::f64::consts::PI).unwrap()
         {
             Some(WGS84::new_rad(latitude, longitude, altitude))
         } else {
