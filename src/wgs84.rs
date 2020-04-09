@@ -75,6 +75,48 @@ where
         }
     }
 
+    /// Create a new WGS84 position
+    ///
+    /// # Arguments
+    /// - `latitude` in radians
+    /// - `longitude` in radians
+    /// - `altitude` in meters
+    ///
+    /// # Panics
+    /// This will panic if `latitude` or `longitude` are not defined on the
+    /// WGS84 ellipsoid.
+    pub fn new_rad(latitude: N, longitude: N, altitude: N) -> WGS84<N> {
+        assert!(
+            latitude.abs() <= N::from_f64(f64::FRAC_PI_2).unwrap(),
+            "Latitude must be in the range [-π/2, π/2]"
+        );
+        assert!(
+            longitude.abs() <= N::from_f64(f64::PI).unwrap(),
+            "Longitude must be in the range [-π, π]"
+        );
+        WGS84 {
+            lat: latitude,
+            lon: longitude,
+            alt: altitude,
+        }
+    }
+
+    /// Try to create a new WGS84 position
+    ///
+    /// # Arguments
+    /// - `latitude` in radians
+    /// - `longitude` in radians
+    /// - `altitude` in meters
+    pub fn try_new_rad(latitude: N, longitude: N, altitude: N) -> Option<WGS84<N>> {
+        if latitude.abs() <= N::from_f64(f64::FRAC_PI_2).unwrap()
+            && longitude.abs() <= N::from_f64(f64::PI).unwrap()
+        {
+            Some(WGS84::new_rad(latitude, longitude, altitude))
+        } else {
+            None
+        }
+    }
+
     /// Get latitude of position, in degrees
     pub fn latitude_degrees(&self) -> N {
         N::from_f64(f64::from(self.lat).to_degrees()).unwrap()
