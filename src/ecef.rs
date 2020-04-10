@@ -198,7 +198,8 @@ impl<N: RealField> From<WGS84<N>> for ECEF<N> {
 
         let x = (altitude + n) * wgs.latitude_rad().cos() * wgs.longitude_rad().cos();
         let y = (altitude + n) * wgs.latitude_rad().cos() * wgs.longitude_rad().sin();
-        let z = (altitude + n - N::from_f64(ECCENTRICITY_SQ).unwrap() * n) * wgs.latitude_rad().sin();
+        let z =
+            (altitude + n - N::from_f64(ECCENTRICITY_SQ).unwrap() * n) * wgs.latitude_rad().sin();
 
         ECEF::new(x, y, z)
     }
