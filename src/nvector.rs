@@ -41,9 +41,9 @@ impl<N: RealField> From<WGS84<N>> for NVector<N> {
         // defined. See: Table 2 in Gade(2010).
         // NOTE: This is consistent with the ECEF implementation in this crate
         let vec = Vector3::new(
-            f.longitude().cos() * f.latitude().cos(),
-            f.longitude().sin() * f.latitude().cos(),
-            f.latitude().sin(),
+            f.longitude_rad().cos() * f.latitude_rad().cos(),
+            f.longitude_rad().sin() * f.latitude_rad().cos(),
+            f.latitude_rad().sin(),
         );
         NVector::new(vec, f.altitude())
     }
@@ -97,8 +97,8 @@ mod tests {
         fn from_wgs84(wgs: WGS84<f64>) -> () {
             let test = WGS84::from(NVector::from(wgs));
 
-            close(wgs.latitude(), test.latitude(), 0.000001);
-            close(wgs.longitude(), test.longitude(), 0.000001);
+            close(wgs.latitude_rad(), test.latitude_rad(), 0.000001);
+            close(wgs.longitude_rad(), test.longitude_rad(), 0.000001);
             close(wgs.altitude(), test.altitude(), 0.000001);
         }
 

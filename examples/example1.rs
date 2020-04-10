@@ -6,8 +6,8 @@ fn main() {
     // First we define two positions in Latitude/Longitude,
     // this library only implement operations with WGS-84 ellipsoid
     // so we use that type
-    let pos_a = WGS84::new(36.12, -86.67, 0.0);
-    let pos_b = WGS84::new(33.94, -118.40, 0.0);
+    let pos_a = WGS84::new_deg(36.12, -86.67, 0.0);
+    let pos_b = WGS84::new_deg(33.94, -118.40, 0.0);
 
     // We could convert each of the positions to n-vectors with
     // `NVector::from(pos_a)`, but for the simple operations
