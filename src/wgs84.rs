@@ -20,12 +20,26 @@ pub const ECCENTRICITY_SQ: f64 = 2.0 * FLATTENING - FLATTENING * FLATTENING;
 /// ellipsoid.
 /// See: [WGS84](https://en.wikipedia.org/wiki/World_Geodetic_System) for
 /// more information.
+/// The `serde` feature allows this to be Serialized / Deserialized.
+/// If serialized it will look like
+/// ```json
+/// {
+///    "latitude": 0.0,
+///    "longitude": 0.0,
+///    "altitude": 0.0
+/// }
+/// ```
+/// Note: all values will be in radians
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(PartialEq, Clone, Copy, Debug)]
 pub struct WGS84<N> {
     // Represented as radians
+    #[cfg_attr(feature = "serde", serde(rename = "latitude"))]
     lat: N,
     // Represented as radians
+    #[cfg_attr(feature = "serde", serde(rename = "longitude"))]
     lon: N,
+    #[cfg_attr(feature = "serde", serde(rename = "altitude"))]
     alt: N,
 }
 
