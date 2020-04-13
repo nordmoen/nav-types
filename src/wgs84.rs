@@ -29,7 +29,7 @@ pub const ECCENTRICITY_SQ: f64 = 2.0 * FLATTENING - FLATTENING * FLATTENING;
 ///    "altitude": 0.0
 /// }
 /// ```
-/// Note: all values will be in radians
+/// Note: latitude and longitude values will be in radians
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(PartialEq, Clone, Copy, Debug)]
 pub struct WGS84<N> {
