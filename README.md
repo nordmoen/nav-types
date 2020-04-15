@@ -13,7 +13,7 @@ have meaning as geographic entities.
 Place this in your `Cargo.toml`
 
 ```toml
-nav-types = "0.4.4"
+nav-types = "0.5.0"
 ```
 
 and use it to calculate vectors and position:
