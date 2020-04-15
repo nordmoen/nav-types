@@ -13,7 +13,7 @@ keywords = ["nav", "navigation", "ecef", "latitude", "wgs84"]
 license = "MIT"
 
 [dependencies]
-nalgebra = "0.20"
+nalgebra = "0.21"
 
 [dev-dependencies]
 assert = "0.7"
