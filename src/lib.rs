@@ -14,8 +14,8 @@
 //! use nav_types::{ECEF, WGS84, ENU, NED};
 //!
 //! // Define positions using latitude and longitude on the WGS84 ellipsoid
-//! let oslo = WGS84::new_deg(59.95, 10.75, 0.0);
-//! let stockholm = WGS84::new_deg(59.329444, 18.068611, 0.0);
+//! let oslo = WGS84::from_degrees_and_meters(59.95, 10.75, 0.0);
+//! let stockholm = WGS84::from_degrees_and_meters(59.329444, 18.068611, 0.0);
 //!
 //! println!("Great circle distance between Oslo and Stockholm: {:?}",
 //!     oslo.distance(&stockholm));

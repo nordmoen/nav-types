@@ -43,7 +43,7 @@ where
     /// # Panics
     /// This will panic if `latitude` or `longitude` are not defined on the
     /// WGS84 ellipsoid.
-    pub fn new_deg(latitude: N, longitude: N, altitude: N) -> WGS84<N> {
+    pub fn from_degrees_and_meters(latitude: N, longitude: N, altitude: N) -> WGS84<N> {
         assert!(
             latitude.abs() <= N::from_f64(90.0).unwrap(),
             "Latitude must be in the range [-90, 90]"
@@ -65,11 +65,13 @@ where
     /// - `latitude` in degrees
     /// - `longitude` in degrees
     /// - `altitude` in meters
-    pub fn try_new_deg(latitude: N, longitude: N, altitude: N) -> Option<WGS84<N>> {
+    pub fn try_from_degrees_and_meters(latitude: N, longitude: N, altitude: N) -> Option<WGS84<N>> {
         if latitude.abs() <= N::from_f64(90.0).unwrap()
             && longitude.abs() <= N::from_f64(180.0).unwrap()
         {
-            Some(WGS84::new_deg(latitude, longitude, altitude))
+            Some(WGS84::from_degrees_and_meters(
+                latitude, longitude, altitude,
+            ))
         } else {
             None
         }
@@ -85,7 +87,7 @@ where
     /// # Panics
     /// This will panic if `latitude` or `longitude` are not defined on the
     /// WGS84 ellipsoid.
-    pub fn new_rad(latitude: N, longitude: N, altitude: N) -> WGS84<N> {
+    pub fn from_radians_and_meters(latitude: N, longitude: N, altitude: N) -> WGS84<N> {
         assert!(
             latitude.abs() <= N::from_f64(std::f64::consts::FRAC_PI_2).unwrap(),
             "Latitude must be in the range [-π/2, π/2]"
@@ -107,7 +109,7 @@ where
     /// - `latitude` in radians
     /// - `longitude` in radians
     /// - `altitude` in meters
-    pub fn try_new_rad(latitude: N, longitude: N, altitude: N) -> Option<WGS84<N>> {
+    pub fn try_from_radians_and_meters(latitude: N, longitude: N, altitude: N) -> Option<WGS84<N>> {
         if latitude.abs() <= N::from_f64(std::f64::consts::FRAC_PI_2).unwrap()
             && longitude.abs() <= N::from_f64(std::f64::consts::PI).unwrap()
         {
@@ -122,12 +124,12 @@ where
     }
 
     /// Get latitude of position, in degrees
-    pub fn latitude_deg(&self) -> N {
+    pub fn latitude_degrees(&self) -> N {
         N::from_f64(f64::from(self.lat).to_degrees()).unwrap()
     }
 
     /// Get longitude of position, in degrees
-    pub fn longitude_deg(&self) -> N {
+    pub fn longitude_degrees(&self) -> N {
         N::from_f64(f64::from(self.lon).to_degrees()).unwrap()
     }
 
@@ -141,19 +143,19 @@ where
     /// ```rust
     /// use nav_types::WGS84;
     ///
-    /// let oslo = WGS84::new_deg(59.95, 10.75, 0.0);
-    /// let stockholm = WGS84::new_deg(59.329444, 18.068611, 0.0);
+    /// let oslo = WGS84::from_degrees_and_meters(59.95, 10.75, 0.0);
+    /// let stockholm = WGS84::from_degrees_and_meters(59.329444, 18.068611, 0.0);
     ///
     /// println!("Great circle distance between Oslo and Stockholm: {:?}",
     ///     oslo.distance(&stockholm));
     /// ```
     pub fn distance(&self, other: &WGS84<N>) -> N {
-        let delta_lat = other.latitude_rad() - self.latitude_rad();
-        let delta_lon = other.longitude_rad() - self.longitude_rad();
+        let delta_lat = other.latitude_radians() - self.latitude_radians();
+        let delta_lon = other.longitude_radians() - self.longitude_radians();
 
         let a = (delta_lat / N::from_f64(2.0).unwrap()).sin().powi(2)
-            + self.latitude_rad().cos()
-                * other.latitude_rad().cos()
+            + self.latitude_radians().cos()
+                * other.latitude_radians().cos()
                 * (delta_lon / N::from_f64(2.0).unwrap()).sin().powi(2);
         let c = N::from_f64(2.0).unwrap() * a.sqrt().asin();
 
@@ -162,16 +164,16 @@ where
 }
 
 impl<N: Copy> WGS84<N> {
-    /// Get altitude of position
+    /// Get altitude of position, in meters
     pub fn altitude(&self) -> N {
         self.alt
     }
     /// Get latitude of position, in radians
-    pub fn latitude_rad(&self) -> N {
+    pub fn latitude_radians(&self) -> N {
         self.lat
     }
     /// Get longitude of position, in radians
-    pub fn longitude_rad(&self) -> N {
+    pub fn longitude_radians(&self) -> N {
         self.lon
     }
 }
@@ -260,7 +262,7 @@ impl Arbitrary for WGS84<f64> {
         // below might still cause problems
         let alt = g.gen_range(-6300000.0, 10000000.0);
 
-        WGS84::new_deg(lat, lon, alt)
+        WGS84::from_degrees_and_meters(lat, lon, alt)
     }
 }
 
@@ -284,7 +286,7 @@ mod tests {
             // If either latitude or longitude is outside acceptable range
             // the test must fail
             TestResult::must_fail(move || {
-                WGS84::new_deg(latitude, longitude, altitude);
+                WGS84::from_degrees_and_meters(latitude, longitude, altitude);
             })
         }
     }
@@ -298,21 +300,21 @@ mod tests {
     fn dateline() {
         // This test ensures that when moving west from the dateline
         // the longitude resets to 180
-        let a = WGS84::new_deg(20.0, 180.0, 0.0);
+        let a = WGS84::from_degrees_and_meters(20.0, 180.0, 0.0);
         let vec = ENU::new(-10.0, 0.0, 0.0);
 
         let ans = a + vec;
         // NOTE: Precision here is rather arbitrary and depends on the
         // length of the vector used and so on, we are mostly interested
         // in seeing that the longitude is reset to positive
-        close(ans.longitude_deg(), 180.0, 0.001);
-        close(ans.latitude_deg(), 20.0, 0.001);
+        close(ans.longitude_degrees(), 180.0, 0.001);
+        close(ans.latitude_degrees(), 20.0, 0.001);
     }
 
     #[test]
     fn conversion_inversion_ecef() {
-        let oslo: WGS84<f64> = WGS84::new_deg(59.95, 10.75, 0.0);
-        let stockholm: WGS84<f64> = WGS84::new_deg(59.329444, 18.068611, 0.0);
+        let oslo: WGS84<f64> = WGS84::from_degrees_and_meters(59.95, 10.75, 0.0);
+        let stockholm: WGS84<f64> = WGS84::from_degrees_and_meters(59.329444, 18.068611, 0.0);
 
         for &place in [oslo, stockholm].iter() {
             let distance = place.distance(&WGS84::from(ECEF::from(place)));
@@ -322,7 +324,7 @@ mod tests {
 
     #[test]
     fn conversion_ecef() {
-        let oslo_wgs84: WGS84<f64> = WGS84::new_deg(59.95, 10.75, 0.0);
+        let oslo_wgs84: WGS84<f64> = WGS84::from_degrees_and_meters(59.95, 10.75, 0.0);
         let oslo_ecef: ECEF<f64> = ECEF::new(3145735.0, 597236.0, 5497690.0);
 
         for &(place_wgs84, place_ecef) in [(oslo_wgs84, oslo_ecef)].iter() {
@@ -333,11 +335,12 @@ mod tests {
 
     #[test]
     fn add_enu() {
-        let oslo: WGS84<f64> = WGS84::new_deg(59.95, 10.75, 0.0);
-        let oslo_high: WGS84<f64> = WGS84::new_deg(59.95, 10.75, 100.0);
+        let oslo: WGS84<f64> = WGS84::from_degrees_and_meters(59.95, 10.75, 0.0);
+        let oslo_high: WGS84<f64> = WGS84::from_degrees_and_meters(59.95, 10.75, 100.0);
 
-        let stockholm: WGS84<f64> = WGS84::new_deg(59.329444, 18.068611, 0.0);
-        let stockholm_high: WGS84<f64> = WGS84::new_deg(59.329444, 18.068611, 100.0);
+        let stockholm: WGS84<f64> = WGS84::from_degrees_and_meters(59.329444, 18.068611, 0.0);
+        let stockholm_high: WGS84<f64> =
+            WGS84::from_degrees_and_meters(59.329444, 18.068611, 100.0);
 
         for &(place, place_high) in [(oslo, oslo_high), (stockholm, stockholm_high)].iter() {
             let distance =

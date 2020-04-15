@@ -9,8 +9,8 @@ fn main() {
     // First we define two positions in Latitude/Longitude,
     // this library only implement operations with WGS-84 ellipsoid
     // so we use that type
-    let pos_a = WGS84::new_deg(36.12, -86.67, 0.0);
-    let pos_b = WGS84::new_deg(33.94, -118.40, 0.0);
+    let pos_a = WGS84::from_degrees_and_meters(36.12, -86.67, 0.0);
+    let pos_b = WGS84::from_degrees_and_meters(33.94, -118.40, 0.0);
 
     // We then convert these positions into n-vectors:
     let n_a = NVector::from(pos_a);

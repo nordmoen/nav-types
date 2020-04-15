@@ -4,7 +4,7 @@ use nav_types::{ECEF, WGS84};
 
 fn main() {
     // We start with a position given in latitude, longitude and altitude
-    let position = WGS84::new_deg(36.12, -86.67, 0.0);
+    let position = WGS84::from_degrees_and_meters(36.12, -86.67, 0.0);
 
     // This can then easily be converted into ECEF by changing the type
     let ecef = ECEF::from(position);
