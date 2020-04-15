@@ -4,7 +4,7 @@ use nav_types::{ENU, WGS84};
 
 fn main() {
     // We start with the position of our "vehicle"
-    let pos_a = WGS84::new(36.12, -86.67, 0.0);
+    let pos_a = WGS84::from_degrees_and_meters(36.12, -86.67, 0.0);
     // Next we have the vector from the "vehicle" to the desired object,
     // it is assumed that the vector is rotated into proper ENU or NED
     // format

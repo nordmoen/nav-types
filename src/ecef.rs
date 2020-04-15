@@ -42,15 +42,15 @@ impl<N: RealField> ECEF<N> {
     fn r_enu_from_ecef(self) -> Matrix3<N> {
         let wgs = WGS84::from(self);
         Matrix3::new(
-            -wgs.longitude().sin(),
-            wgs.longitude().cos(),
+            -wgs.longitude_radians().sin(),
+            wgs.longitude_radians().cos(),
             N::zero(),
-            -wgs.latitude().sin() * wgs.longitude().cos(),
-            -wgs.latitude().sin() * wgs.longitude().sin(),
-            wgs.latitude().cos(),
-            wgs.latitude().cos() * wgs.longitude().cos(),
-            wgs.latitude().cos() * wgs.longitude().sin(),
-            wgs.latitude().sin(),
+            -wgs.latitude_radians().sin() * wgs.longitude_radians().cos(),
+            -wgs.latitude_radians().sin() * wgs.longitude_radians().sin(),
+            wgs.latitude_radians().cos(),
+            wgs.latitude_radians().cos() * wgs.longitude_radians().cos(),
+            wgs.latitude_radians().cos() * wgs.longitude_radians().sin(),
+            wgs.latitude_radians().sin(),
         )
     }
 
@@ -191,14 +191,15 @@ impl<N: RealField> From<WGS84<N>> for ECEF<N> {
         let semi_major_axis = N::from_f64(SEMI_MAJOR_AXIS).unwrap();
         let ecc_part = N::from_f64(ECCENTRICITY_SQ).unwrap();
         let sin_part = N::from_f64(0.5).unwrap()
-            * (N::one() - (N::from_f64(2.0).unwrap() * wgs.latitude()).cos());
+            * (N::one() - (N::from_f64(2.0).unwrap() * wgs.latitude_radians()).cos());
 
         let n = semi_major_axis / (N::one() - ecc_part * sin_part).sqrt();
         let altitude = wgs.altitude();
 
-        let x = (altitude + n) * wgs.latitude().cos() * wgs.longitude().cos();
-        let y = (altitude + n) * wgs.latitude().cos() * wgs.longitude().sin();
-        let z = (altitude + n - N::from_f64(ECCENTRICITY_SQ).unwrap() * n) * wgs.latitude().sin();
+        let x = (altitude + n) * wgs.latitude_radians().cos() * wgs.longitude_radians().cos();
+        let y = (altitude + n) * wgs.latitude_radians().cos() * wgs.longitude_radians().sin();
+        let z = (altitude + n - N::from_f64(ECCENTRICITY_SQ).unwrap() * n)
+            * wgs.latitude_radians().sin();
 
         ECEF::new(x, y, z)
     }
@@ -246,8 +247,8 @@ mod tests {
         fn from_wgs84(wgs: WGS84<f64>) -> () {
             let test = WGS84::from(ECEF::from(wgs));
 
-            close(wgs.latitude(), test.latitude(), 0.000001);
-            close(wgs.longitude(), test.longitude(), 0.000001);
+            close(wgs.latitude_radians(), test.latitude_radians(), 0.000001);
+            close(wgs.longitude_radians(), test.longitude_radians(), 0.000001);
             close(wgs.altitude(), test.altitude(), 0.000001);
         }
 
