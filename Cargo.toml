@@ -20,7 +20,9 @@ serde = {version = "1.0.105", optional = true, features = ["serde_derive"]}
 assert = "0.7"
 quickcheck = "0.9.2"
 rand = "0.7.3"
+serde_test = "1.0.106"
+
 
 [features]
 default = []
-dev = []
+dev = ["serde"]
