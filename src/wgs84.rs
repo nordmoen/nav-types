@@ -286,31 +286,35 @@ mod tests {
     use crate::enu::ENU;
     use assert::close;
     use quickcheck::{quickcheck, TestResult};
-    use serde_test::{assert_tokens, Token};
 
     #[test]
+    #[cfg_attr(not(feature = "serde"), ignore)]
     fn test_ser_de() {
-        let oslo: WGS84<f64> = WGS84 {
-            lat: 1.0463,
-            lon: 0.1876,
-            alt: 0.0,
-        };
-        assert_tokens(
-            &oslo,
-            &[
-                Token::Struct {
-                    name: "WGS84",
-                    len: 3,
-                },
-                Token::Str("latitude"),
-                Token::F64(1.0463),
-                Token::Str("longitude"),
-                Token::F64(0.1876),
-                Token::Str("altitude"),
-                Token::F64(0.0),
-                Token::StructEnd,
-            ],
-        );
+        #[cfg(feature = "serde")]
+        {
+            use serde_test::{assert_tokens, Token};
+            let oslo: WGS84<f64> = WGS84 {
+                lat: 1.0463,
+                lon: 0.1876,
+                alt: 0.0,
+            };
+            assert_tokens(
+                &oslo,
+                &[
+                    Token::Struct {
+                        name: "WGS84",
+                        len: 3,
+                    },
+                    Token::Str("latitude"),
+                    Token::F64(1.0463),
+                    Token::Str("longitude"),
+                    Token::F64(0.1876),
+                    Token::Str("altitude"),
+                    Token::F64(0.0),
+                    Token::StructEnd,
+                ],
+            );
+        }
     }
 
     fn create_wgs84(latitude: f32, longitude: f32, altitude: f32) -> TestResult {
