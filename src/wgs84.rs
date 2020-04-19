@@ -316,6 +316,10 @@ mod tests {
                 ],
             );
         }
+        #[cfg(not(feature = "serde"))]
+        {
+            panic!("This test requires the serde feature to be enabled");
+        }
     }
 
     fn create_wgs84(latitude: f32, longitude: f32, altitude: f32) -> TestResult {
