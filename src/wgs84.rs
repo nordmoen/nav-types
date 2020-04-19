@@ -21,7 +21,8 @@ pub const ECCENTRICITY_SQ: f64 = 2.0 * FLATTENING - FLATTENING * FLATTENING;
 /// See: [WGS84](https://en.wikipedia.org/wiki/World_Geodetic_System) for
 /// more information.
 /// The `serde` feature allows this to be Serialized / Deserialized.
-/// If serialized it will look like
+/// If serialized into json, it will look like this. Enabled thought
+/// the `serde` feature
 /// ```json
 /// {
 ///    "latitude": 0.0,
