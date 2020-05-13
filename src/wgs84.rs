@@ -20,12 +20,27 @@ pub const ECCENTRICITY_SQ: f64 = 2.0 * FLATTENING - FLATTENING * FLATTENING;
 /// ellipsoid.
 /// See: [WGS84](https://en.wikipedia.org/wiki/World_Geodetic_System) for
 /// more information.
+/// The `serde` feature allows this to be Serialized / Deserialized.
+/// If serialized into json, it will look like this. Enabled thought
+/// the `serde` feature
+/// ```json
+/// {
+///    "latitude": 0.0,
+///    "longitude": 0.0,
+///    "altitude": 0.0
+/// }
+/// ```
+/// Note: latitude and longitude values will be in radians
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(PartialEq, Clone, Copy, Debug)]
 pub struct WGS84<N> {
     // Represented as radians
+    #[cfg_attr(feature = "serde", serde(rename = "latitude"))]
     lat: N,
     // Represented as radians
+    #[cfg_attr(feature = "serde", serde(rename = "longitude"))]
     lon: N,
+    #[cfg_attr(feature = "serde", serde(rename = "altitude"))]
     alt: N,
 }
 
@@ -272,6 +287,40 @@ mod tests {
     use crate::enu::ENU;
     use assert::close;
     use quickcheck::{quickcheck, TestResult};
+
+    #[test]
+    #[cfg_attr(not(feature = "serde"), ignore)]
+    fn test_ser_de() {
+        #[cfg(feature = "serde")]
+        {
+            use serde_test::{assert_tokens, Token};
+            let oslo: WGS84<f64> = WGS84 {
+                lat: 1.0463,
+                lon: 0.1876,
+                alt: 0.0,
+            };
+            assert_tokens(
+                &oslo,
+                &[
+                    Token::Struct {
+                        name: "WGS84",
+                        len: 3,
+                    },
+                    Token::Str("latitude"),
+                    Token::F64(1.0463),
+                    Token::Str("longitude"),
+                    Token::F64(0.1876),
+                    Token::Str("altitude"),
+                    Token::F64(0.0),
+                    Token::StructEnd,
+                ],
+            );
+        }
+        #[cfg(not(feature = "serde"))]
+        {
+            panic!("This test requires the serde feature to be enabled");
+        }
+    }
 
     fn create_wgs84(latitude: f32, longitude: f32, altitude: f32) -> TestResult {
         // This function is used to check that illegal latitude and longitude
