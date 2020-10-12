@@ -1,6 +1,6 @@
 [package]
 name = "nav-types"
-version = "0.5.0"
+version = "0.5.1"
 authors = ["Jørgen Nordmoen <nordmoen90@gmail.com>"]
 description = "Easily work with global positions and vectors"
 edition = "2018"
@@ -13,14 +13,14 @@ keywords = ["nav", "navigation", "ecef", "latitude", "wgs84"]
 license = "MIT"
 
 [dependencies]
-nalgebra = "0.21"
-serde = { version = "1.0.105", optional = true, features = ["serde_derive"] }
+nalgebra = "0.22"
+serde = { version = "1.0.116", optional = true, features = ["serde_derive"] }
 
 [dev-dependencies]
 assert = "0.7"
 quickcheck = "0.9.2"
 rand = "0.7.3"
-serde_test = "1.0.106"
+serde_test = "1.0.116"
 
 
 [features]
