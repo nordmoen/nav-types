@@ -1,7 +1,7 @@
 use crate::ecef::ECEF;
 use crate::wgs84::{ECCENTRICITY_SQ, SEMI_MAJOR_AXIS, WGS84};
+use core::convert::From;
 use na::{RealField, Vector3};
-use std::convert::From;
 
 /// N-Vector position
 ///

@@ -1,7 +1,7 @@
 use crate::Access;
+use core::convert::Into;
+use core::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 use na::{RealField, Vector3};
-use std::convert::Into;
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
 /// East North Up vector
 ///
