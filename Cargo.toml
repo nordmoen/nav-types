@@ -14,7 +14,7 @@ license = "MIT"
 
 [dependencies]
 nalgebra = { version = "0.23", default-features = false }
-serde = { version = "1.0.116", optional = true, features = ["serde_derive"] }
+serde = { version = "1.0.116", default-features = false, optional = true, features = ["serde_derive"] }
 
 [dev-dependencies]
 assert = "0.7"
