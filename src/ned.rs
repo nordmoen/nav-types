@@ -1,6 +1,7 @@
 use crate::enu::ENU;
+use crate::utils::RealFieldCopy;
 use crate::Access;
-use na::{RealField, Vector3};
+use na::Vector3;
 use std::convert::From;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
@@ -10,9 +11,9 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssi
 /// See: [NED](https://en.wikipedia.org/wiki/North_east_down) for a general
 /// description.
 #[derive(Debug, Copy, Clone, PartialEq)]
-pub struct NED<N: RealField>(Vector3<N>);
+pub struct NED<N: RealFieldCopy>(Vector3<N>);
 
-impl<N: RealField> NED<N> {
+impl<N: RealFieldCopy> NED<N> {
     /// Create a new NED vector
     pub fn new(n: N, e: N, d: N) -> NED<N> {
         NED(Vector3::new(n, e, d))
@@ -24,7 +25,7 @@ impl<N: RealField> NED<N> {
     }
 }
 
-impl<N: RealField + Copy> NED<N> {
+impl<N: RealFieldCopy> NED<N> {
     /// Get the North component of this vector
     pub fn north(&self) -> N {
         self.0.x
@@ -41,66 +42,66 @@ impl<N: RealField + Copy> NED<N> {
     }
 }
 
-impl<N: RealField + Copy + Neg<Output = N>> From<NED<N>> for ENU<N> {
+impl<N: RealFieldCopy + Neg<Output = N>> From<NED<N>> for ENU<N> {
     /// Convert `NED` vectors into `ENU`
     fn from(e: NED<N>) -> Self {
         ENU::new(e.east(), e.north(), -e.down())
     }
 }
 
-impl<N: RealField + Copy + Add<N, Output = N>> Add<NED<N>> for NED<N> {
+impl<N: RealFieldCopy + Add<N, Output = N>> Add<NED<N>> for NED<N> {
     type Output = NED<N>;
     fn add(self, right: NED<N>) -> NED<N> {
         NED(self.0 + right.0)
     }
 }
 
-impl<N: RealField + Copy + AddAssign<N>> AddAssign<NED<N>> for NED<N> {
+impl<N: RealFieldCopy + AddAssign<N>> AddAssign<NED<N>> for NED<N> {
     fn add_assign(&mut self, right: NED<N>) {
         self.0 += right.0
     }
 }
 
-impl<N: RealField + Copy + Sub<N, Output = N>> Sub<NED<N>> for NED<N> {
+impl<N: RealFieldCopy + Sub<N, Output = N>> Sub<NED<N>> for NED<N> {
     type Output = NED<N>;
     fn sub(self, right: NED<N>) -> NED<N> {
         NED(self.0 - right.0)
     }
 }
 
-impl<N: RealField + Copy + SubAssign<N>> SubAssign<NED<N>> for NED<N> {
+impl<N: RealFieldCopy + SubAssign<N>> SubAssign<NED<N>> for NED<N> {
     fn sub_assign(&mut self, right: NED<N>) {
         self.0 -= right.0
     }
 }
 
-impl<N: RealField + Copy + Mul<N, Output = N>> Mul<N> for NED<N> {
+impl<N: RealFieldCopy + Mul<N, Output = N>> Mul<N> for NED<N> {
     type Output = NED<N>;
     fn mul(self, right: N) -> NED<N> {
         NED(self.0 * right)
     }
 }
 
-impl<N: RealField + Copy + MulAssign<N>> MulAssign<N> for NED<N> {
+impl<N: RealFieldCopy + MulAssign<N>> MulAssign<N> for NED<N> {
     fn mul_assign(&mut self, right: N) {
         self.0 *= right
     }
 }
 
-impl<N: RealField + Copy + Div<N, Output = N>> Div<N> for NED<N> {
+impl<N: RealFieldCopy + Div<N, Output = N>> Div<N> for NED<N> {
     type Output = NED<N>;
     fn div(self, right: N) -> NED<N> {
         NED(self.0 / right)
     }
 }
 
-impl<N: RealField + Copy + DivAssign<N>> DivAssign<N> for NED<N> {
+impl<N: RealFieldCopy + DivAssign<N>> DivAssign<N> for NED<N> {
     fn div_assign(&mut self, right: N) {
         self.0 /= right
     }
 }
 
-impl<N: RealField> Access<Vector3<N>> for NED<N> {
+impl<N: RealFieldCopy> Access<Vector3<N>> for NED<N> {
     fn access(self) -> Vector3<N> {
         self.0
     }

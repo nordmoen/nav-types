@@ -50,6 +50,7 @@ mod ecef;
 mod enu;
 mod ned;
 mod nvector;
+mod utils;
 mod wgs84;
 
 pub use self::ecef::ECEF;
