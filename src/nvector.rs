@@ -1,6 +1,7 @@
 use crate::ecef::ECEF;
+use crate::utils::RealFieldCopy;
 use crate::wgs84::{ECCENTRICITY_SQ, SEMI_MAJOR_AXIS, WGS84};
-use na::{RealField, Vector3};
+use na::Vector3;
 use std::convert::From;
 
 /// N-Vector position
@@ -10,19 +11,19 @@ use std::convert::From;
 /// the poles compared to WGS84 Latitude, Longitude format.
 /// See: [nvector](http://www.navlab.net/nvector/) for detailed information.
 #[derive(PartialEq, Clone, Copy, Debug)]
-pub struct NVector<N: RealField> {
+pub struct NVector<N: RealFieldCopy> {
     vec: Vector3<N>,
     alt: N,
 }
 
-impl<N: RealField> NVector<N> {
+impl<N: RealFieldCopy> NVector<N> {
     /// Create a new NVector
     pub fn new(vec: Vector3<N>, altitude: N) -> NVector<N> {
         NVector { vec, alt: altitude }
     }
 }
 
-impl<N: RealField + Copy> NVector<N> {
+impl<N: RealFieldCopy> NVector<N> {
     /// Get the vector component of this position
     pub fn vector(&self) -> Vector3<N> {
         self.vec
@@ -34,7 +35,7 @@ impl<N: RealField + Copy> NVector<N> {
     }
 }
 
-impl<N: RealField> From<WGS84<N>> for NVector<N> {
+impl<N: RealFieldCopy> From<WGS84<N>> for NVector<N> {
     fn from(f: WGS84<N>) -> NVector<N> {
         // This implementation defines the ECEF coordinate system to have the Z
         // axes point directly north, this affects the way which N-vectors are
@@ -49,7 +50,7 @@ impl<N: RealField> From<WGS84<N>> for NVector<N> {
     }
 }
 
-impl<N: RealField> From<ECEF<N>> for NVector<N> {
+impl<N: RealFieldCopy> From<ECEF<N>> for NVector<N> {
     #![allow(clippy::many_single_char_names)]
     fn from(ecef: ECEF<N>) -> NVector<N> {
         // These are often used constants below:

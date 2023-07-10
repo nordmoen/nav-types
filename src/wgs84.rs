@@ -1,6 +1,6 @@
 use crate::ecef::ECEF;
 use crate::nvector::NVector;
-use na::RealField;
+use crate::utils::RealFieldCopy;
 use std::convert::From;
 
 #[cfg(test)]
@@ -44,7 +44,7 @@ pub struct WGS84<N> {
     alt: N,
 }
 
-impl<N: RealField> WGS84<N>
+impl<N: RealFieldCopy> WGS84<N>
 where
     f64: From<N>,
 {
@@ -193,7 +193,7 @@ impl<N: Copy> WGS84<N> {
     }
 }
 
-impl<N: RealField> From<NVector<N>> for WGS84<N> {
+impl<N: RealFieldCopy> From<NVector<N>> for WGS84<N> {
     fn from(f: NVector<N>) -> WGS84<N> {
         // This implementation defines the ECEF coordinate system to have the Z
         // axes point directly north, this affects the way which N-vectors are
@@ -218,7 +218,7 @@ impl<N: RealField> From<NVector<N>> for WGS84<N> {
     }
 }
 
-impl<N: RealField> From<ECEF<N>> for WGS84<N> {
+impl<N: RealFieldCopy> From<ECEF<N>> for WGS84<N> {
     #![allow(clippy::many_single_char_names)]
     fn from(ecef: ECEF<N>) -> WGS84<N> {
         // https://en.wikipedia.org/wiki/Geographic_coordinate_conversion#The_application_of_Ferrari's_solution

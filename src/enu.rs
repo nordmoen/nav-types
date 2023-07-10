@@ -1,5 +1,6 @@
+use crate::utils::RealFieldCopy;
 use crate::Access;
-use na::{RealField, Vector3};
+use na::Vector3;
 use std::convert::Into;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
@@ -14,9 +15,9 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 /// can be converted to ENU with a `From` implementation will automatically
 /// be able to work with ENU at the cost of the `Into` conversion.
 #[derive(Debug, Copy, Clone, PartialEq)]
-pub struct ENU<N: RealField>(Vector3<N>);
+pub struct ENU<N: RealFieldCopy>(Vector3<N>);
 
-impl<N: RealField> ENU<N> {
+impl<N: RealFieldCopy> ENU<N> {
     /// Create a new ENU vector
     pub fn new(e: N, n: N, u: N) -> ENU<N> {
         ENU(Vector3::new(e, n, u))
@@ -28,7 +29,7 @@ impl<N: RealField> ENU<N> {
     }
 }
 
-impl<N: RealField + Copy> ENU<N> {
+impl<N: RealFieldCopy> ENU<N> {
     /// Get the East component of this vector
     pub fn east(&self) -> N {
         self.0.x
@@ -45,59 +46,59 @@ impl<N: RealField + Copy> ENU<N> {
     }
 }
 
-impl<N: RealField + Copy + Add<N, Output = N>, T: Into<ENU<N>>> Add<T> for ENU<N> {
+impl<N: RealFieldCopy + Add<N, Output = N>, T: Into<ENU<N>>> Add<T> for ENU<N> {
     type Output = ENU<N>;
     fn add(self, right: T) -> Self::Output {
         ENU(self.0 + right.into().0)
     }
 }
 
-impl<N: RealField + Copy + AddAssign<N>, T: Into<ENU<N>>> AddAssign<T> for ENU<N> {
+impl<N: RealFieldCopy + AddAssign<N>, T: Into<ENU<N>>> AddAssign<T> for ENU<N> {
     fn add_assign(&mut self, right: T) {
         self.0 += right.into().0
     }
 }
 
-impl<N: RealField + Copy + Sub<N, Output = N>, T: Into<ENU<N>>> Sub<T> for ENU<N> {
+impl<N: RealFieldCopy + Sub<N, Output = N>, T: Into<ENU<N>>> Sub<T> for ENU<N> {
     type Output = ENU<N>;
     fn sub(self, right: T) -> Self::Output {
         ENU(self.0 - right.into().0)
     }
 }
 
-impl<N: RealField + Copy + SubAssign<N>, T: Into<ENU<N>>> SubAssign<T> for ENU<N> {
+impl<N: RealFieldCopy + SubAssign<N>, T: Into<ENU<N>>> SubAssign<T> for ENU<N> {
     fn sub_assign(&mut self, right: T) {
         self.0 -= right.into().0
     }
 }
 
-impl<N: RealField + Copy + Mul<N, Output = N>> Mul<N> for ENU<N> {
+impl<N: RealFieldCopy + Mul<N, Output = N>> Mul<N> for ENU<N> {
     type Output = ENU<N>;
     fn mul(self, right: N) -> Self::Output {
         ENU(self.0 * right)
     }
 }
 
-impl<N: RealField + Copy + MulAssign<N>> MulAssign<N> for ENU<N> {
+impl<N: RealFieldCopy + MulAssign<N>> MulAssign<N> for ENU<N> {
     fn mul_assign(&mut self, right: N) {
         self.0 *= right
     }
 }
 
-impl<N: RealField + Copy + Div<N, Output = N>> Div<N> for ENU<N> {
+impl<N: RealFieldCopy + Div<N, Output = N>> Div<N> for ENU<N> {
     type Output = ENU<N>;
     fn div(self, right: N) -> Self::Output {
         ENU(self.0 / right)
     }
 }
 
-impl<N: RealField + Copy + DivAssign<N>> DivAssign<N> for ENU<N> {
+impl<N: RealFieldCopy + DivAssign<N>> DivAssign<N> for ENU<N> {
     fn div_assign(&mut self, right: N) {
         self.0 /= right
     }
 }
 
-impl<N: RealField> Access<Vector3<N>> for ENU<N> {
+impl<N: RealFieldCopy> Access<Vector3<N>> for ENU<N> {
     fn access(self) -> Vector3<N> {
         self.0
     }
