@@ -1,7 +1,7 @@
 # nav-types
 
 [![Build
-Status](https://travis-ci.org/nordmoen/nav-types.svg?branch=master)](https://travis-ci.org/nordmoen/nav-types) [![Crates.io](https://img.shields.io/crates/v/nav-types.svg?maxAge=2592000)](https://crates.io/crates/nav-types)
+Status](https://github.com/nordmoen/nav-types/actions/workflows/rust.yml/badge.svg)](https://github.com/nordmoen/nav-types/actions/workflows/rust.yml) [![Crates.io](https://img.shields.io/crates/v/nav-types.svg?maxAge=2592000)](https://crates.io/crates/nav-types)
 
 This crate is designed to make it easy to work with positions and vectors that
 have meaning as geographic entities.
