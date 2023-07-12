@@ -53,6 +53,7 @@ mod nvector;
 mod utils;
 mod wgs84;
 
+pub use self::utils::RealFieldCopy;
 pub use self::ecef::ECEF;
 pub use self::enu::ENU;
 pub use self::ned::NED;
