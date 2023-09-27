@@ -141,5 +141,13 @@ mod tests {
             assert_eq!(sum.east(), twi.east());
             assert_eq!(sum.up(), -twi.down());
         }
+
+        fn from_enu(n: f32, e: f32, u: f32) -> () {
+            let enu = ENU::new(e, n, u);
+            let ned = NED::from(enu);
+            assert_eq!(ned.east(), e);
+            assert_eq!(ned.north(), n);
+            assert_eq!(ned.down(), -u);
+        }
     }
 }
