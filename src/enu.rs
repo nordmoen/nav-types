@@ -1,8 +1,9 @@
+use crate::ned::NED;
 use crate::utils::RealFieldCopy;
 use crate::Access;
 use na::Vector3;
 use std::convert::Into;
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
 /// East North Up vector
 ///
@@ -45,6 +46,14 @@ impl<N: RealFieldCopy> ENU<N> {
         self.0.z
     }
 }
+
+impl<N: RealFieldCopy + Neg<Output = N>> From<ENU<N>> for NED<N> {
+    /// Convert `ENU` vectors into `NED`
+    fn from(e: ENU<N>) -> Self {
+        NED::new(e.north(), e.east(), -e.up())
+    }
+}
+
 
 impl<N: RealFieldCopy + Add<N, Output = N>, T: Into<ENU<N>>> Add<T> for ENU<N> {
     type Output = ENU<N>;
