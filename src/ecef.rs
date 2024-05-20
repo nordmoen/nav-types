@@ -1,26 +1,27 @@
 use crate::enu::ENU;
 use crate::nvector::NVector;
+use crate::utils::RealFieldCopy;
 use crate::wgs84::{ECCENTRICITY_SQ, SEMI_MAJOR_AXIS, SEMI_MINOR_AXIS, WGS84};
 use crate::Access;
+use na::{Matrix3, Point3};
 use core::convert::{From, Into};
 use core::ops::{Add, AddAssign, Sub, SubAssign};
-use na::{Matrix3, Point3, RealField};
 
 /// Earth Centered Earth Fixed position
 ///
 /// This struct represents a position in the ECEF coordinate system.
 /// See: [ECEF](https://en.wikipedia.org/wiki/ECEF) for general description.
 #[derive(Debug, Copy, Clone, PartialEq)]
-pub struct ECEF<N: RealField>(Point3<N>);
+pub struct ECEF<N: RealFieldCopy>(Point3<N>);
 
-impl<N: RealField> ECEF<N> {
+impl<N: RealFieldCopy> ECEF<N> {
     /// Create a new ECEF position
     pub fn new(x: N, y: N, z: N) -> ECEF<N> {
         ECEF(Point3::new(x, y, z))
     }
 }
 
-impl<N: RealField> ECEF<N> {
+impl<N: RealFieldCopy> ECEF<N> {
     /// Get the X component of this position
     pub fn x(&self) -> N {
         self.0.x
@@ -37,7 +38,7 @@ impl<N: RealField> ECEF<N> {
     }
 }
 
-impl<N: RealField> ECEF<N> {
+impl<N: RealFieldCopy> ECEF<N> {
     /// Create a rotation matrix from ECEF frame to ENU frame
     fn r_enu_from_ecef(self) -> Matrix3<N> {
         let wgs = WGS84::from(self);
@@ -62,7 +63,7 @@ impl<N: RealField> ECEF<N> {
     /// Euclidean distance between two ECEF positions
     pub fn distance(&self, other: &ECEF<N>) -> N
     where
-        N: RealField,
+        N: RealFieldCopy,
     {
         (other.0 - self.0).norm()
     }
@@ -70,7 +71,7 @@ impl<N: RealField> ECEF<N> {
 
 impl<N, T> Add<T> for ECEF<N>
 where
-    N: RealField,
+    N: RealFieldCopy,
     T: Into<ENU<N>>,
 {
     type Output = ECEF<N>;
@@ -83,7 +84,7 @@ where
 
 impl<N, T> AddAssign<T> for ECEF<N>
 where
-    N: RealField + AddAssign,
+    N: RealFieldCopy + AddAssign,
     T: Into<ENU<N>>,
 {
     fn add_assign(&mut self, right: T) {
@@ -92,7 +93,7 @@ where
     }
 }
 
-impl<N: RealField> Sub<ECEF<N>> for ECEF<N> {
+impl<N: RealFieldCopy> Sub<ECEF<N>> for ECEF<N> {
     type Output = ENU<N>;
     fn sub(self, right: ECEF<N>) -> ENU<N> {
         let enu = right.r_enu_from_ecef() * (self.0 - right.0);
@@ -102,7 +103,7 @@ impl<N: RealField> Sub<ECEF<N>> for ECEF<N> {
 
 impl<N, T> Sub<T> for ECEF<N>
 where
-    N: RealField,
+    N: RealFieldCopy,
     T: Into<ENU<N>>,
 {
     type Output = ECEF<N>;
@@ -114,7 +115,7 @@ where
 
 impl<N, T> SubAssign<T> for ECEF<N>
 where
-    N: RealField + SubAssign,
+    N: RealFieldCopy + SubAssign,
     T: Into<ENU<N>>,
 {
     fn sub_assign(&mut self, right: T) {
@@ -129,7 +130,7 @@ macro_rules! ecef_impl {
     ($T:ident) => {
         impl<N, T> Add<T> for $T<N>
         where
-            N: RealField,
+            N: RealFieldCopy,
             T: Into<ENU<N>>,
         {
             type Output = $T<N>;
@@ -140,7 +141,7 @@ macro_rules! ecef_impl {
 
         impl<N, T> AddAssign<T> for $T<N>
         where
-            N: RealField + AddAssign,
+            N: RealFieldCopy + AddAssign,
             T: Into<ENU<N>>,
         {
             fn add_assign(&mut self, right: T) {
@@ -150,7 +151,7 @@ macro_rules! ecef_impl {
 
         impl<N, T> Sub<T> for $T<N>
         where
-            N: RealField,
+            N: RealFieldCopy,
             T: Into<ENU<N>>,
         {
             type Output = $T<N>;
@@ -159,7 +160,7 @@ macro_rules! ecef_impl {
             }
         }
 
-        impl<N: RealField> Sub<$T<N>> for $T<N> {
+        impl<N: RealFieldCopy> Sub<$T<N>> for $T<N> {
             type Output = ENU<N>;
             fn sub(self, right: $T<N>) -> ENU<N> {
                 ECEF::from(self) - ECEF::from(right)
@@ -168,7 +169,7 @@ macro_rules! ecef_impl {
 
         impl<N, T> SubAssign<T> for $T<N>
         where
-            N: RealField + SubAssign,
+            N: RealFieldCopy + SubAssign,
             T: Into<ENU<N>>,
         {
             fn sub_assign(&mut self, right: T) {
@@ -184,7 +185,7 @@ ecef_impl!(NVector);
 // The only way to work with Latitude/Longitude is to convert to ECEF
 ecef_impl!(WGS84);
 
-impl<N: RealField> From<WGS84<N>> for ECEF<N> {
+impl<N: RealFieldCopy> From<WGS84<N>> for ECEF<N> {
     fn from(wgs: WGS84<N>) -> ECEF<N> {
         // Conversion from:
         // https://doi.org/10.1007/s00190-004-0375-4
@@ -205,7 +206,7 @@ impl<N: RealField> From<WGS84<N>> for ECEF<N> {
     }
 }
 
-impl<N: RealField> From<NVector<N>> for ECEF<N> {
+impl<N: RealFieldCopy> From<NVector<N>> for ECEF<N> {
     fn from(f: NVector<N>) -> ECEF<N> {
         // Constants used for calculation
         let x = f.vector().z;
