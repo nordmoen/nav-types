@@ -4,8 +4,8 @@ use crate::utils::RealFieldCopy;
 use crate::wgs84::{ECCENTRICITY_SQ, SEMI_MAJOR_AXIS, SEMI_MINOR_AXIS, WGS84};
 use crate::Access;
 use na::{Matrix3, Point3};
-use std::convert::{From, Into};
-use std::ops::{Add, AddAssign, Sub, SubAssign};
+use core::convert::{From, Into};
+use core::ops::{Add, AddAssign, Sub, SubAssign};
 
 /// Earth Centered Earth Fixed position
 ///

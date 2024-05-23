@@ -13,8 +13,8 @@ keywords = ["nav", "navigation", "ecef", "latitude", "wgs84"]
 license = "MIT"
 
 [dependencies]
-nalgebra = "0.32"
-serde = { version = "1.0.164", optional = true, features = ["serde_derive"] }
+nalgebra = { version = "0.32", default-features = false }
+serde = { version = "1.0.164", default-features = false, optional = true, features = ["serde_derive"] }
 
 [dev-dependencies]
 assert = "0.7"
@@ -22,7 +22,8 @@ quickcheck = "0.9.2"
 rand = "0.7.3"
 serde_test = "1.0.164"
 
-
 [features]
-default = []
+default = ["std"]
 dev = ["serde"]
+std = ["nalgebra/std"]
+libm = ["nalgebra/libm"]

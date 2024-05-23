@@ -2,8 +2,8 @@ use crate::enu::ENU;
 use crate::utils::RealFieldCopy;
 use crate::Access;
 use na::Vector3;
-use std::convert::From;
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
+use core::convert::From;
+use core::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
 /// North East Down vector
 ///

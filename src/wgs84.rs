@@ -1,7 +1,7 @@
 use crate::ecef::ECEF;
 use crate::nvector::NVector;
 use crate::utils::RealFieldCopy;
-use std::convert::From;
+use core::convert::From;
 
 #[cfg(test)]
 use quickcheck::{Arbitrary, Gen};
@@ -104,11 +104,11 @@ where
     /// WGS84 ellipsoid.
     pub fn from_radians_and_meters(latitude: N, longitude: N, altitude: N) -> WGS84<N> {
         assert!(
-            latitude.abs() <= N::from_f64(std::f64::consts::FRAC_PI_2).unwrap(),
+            latitude.abs() <= N::from_f64(core::f64::consts::FRAC_PI_2).unwrap(),
             "Latitude must be in the range [-π/2, π/2]"
         );
         assert!(
-            longitude.abs() <= N::from_f64(std::f64::consts::PI).unwrap(),
+            longitude.abs() <= N::from_f64(core::f64::consts::PI).unwrap(),
             "Longitude must be in the range [-π, π]"
         );
         WGS84 {
@@ -125,8 +125,8 @@ where
     /// - `longitude` in radians
     /// - `altitude` in meters
     pub fn try_from_radians_and_meters(latitude: N, longitude: N, altitude: N) -> Option<WGS84<N>> {
-        if latitude.abs() <= N::from_f64(std::f64::consts::FRAC_PI_2).unwrap()
-            && longitude.abs() <= N::from_f64(std::f64::consts::PI).unwrap()
+        if latitude.abs() <= N::from_f64(core::f64::consts::FRAC_PI_2).unwrap()
+            && longitude.abs() <= N::from_f64(core::f64::consts::PI).unwrap()
         {
             Some(WGS84 {
                 lat: latitude,

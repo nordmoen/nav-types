@@ -51,6 +51,9 @@ let pos_a_10m_up_2 = pos_a + ned_vec;
 The source is based on [`nalgebra`](http://nalgebra.org) and some methods are
 only available if importing traits from `nalgebra`.
 
+Library works in `no_std` when `libm` feature is be enabled. This feature
+replaces `std` math functions in `nalgebra` with `libm`.
+
 ### Performance
 
 Currently the only way to calculate vectors between latitude and longitude
