@@ -18,19 +18,19 @@ pub struct NVector<N: RealFieldCopy> {
 
 impl<N: RealFieldCopy> NVector<N> {
     /// Create a new NVector
-    pub fn new(vec: Vector3<N>, altitude: N) -> NVector<N> {
+    pub const fn new(vec: Vector3<N>, altitude: N) -> NVector<N> {
         NVector { vec, alt: altitude }
     }
 }
 
 impl<N: RealFieldCopy> NVector<N> {
     /// Get the vector component of this position
-    pub fn vector(&self) -> Vector3<N> {
+    pub const fn vector(&self) -> Vector3<N> {
         self.vec
     }
 
     /// Get the altitude of this position
-    pub fn altitude(&self) -> N {
+    pub const fn altitude(&self) -> N {
         self.alt
     }
 }
@@ -93,6 +93,14 @@ mod tests {
     use crate::ecef::ECEF;
     use crate::wgs84::WGS84;
     use assert::close;
+
+    #[test]
+    fn const_nvector_construction() {
+        const POS: NVector<f64> = NVector::new(Vector3::new(1.0, 2.0, 3.0), 4.0);
+        const ALT: f64 = POS.altitude();
+        const VEC: Vector3<f64> = POS.vector();
+        let _ = (POS, ALT, VEC);
+    }
 
     quickcheck! {
         fn from_wgs84(wgs: WGS84<f64>) -> () {

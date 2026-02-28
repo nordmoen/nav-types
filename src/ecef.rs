@@ -16,7 +16,7 @@ pub struct ECEF<N: RealFieldCopy>(Point3<N>);
 
 impl<N: RealFieldCopy> ECEF<N> {
     /// Create a new ECEF position
-    pub fn new(x: N, y: N, z: N) -> ECEF<N> {
+    pub const fn new(x: N, y: N, z: N) -> ECEF<N> {
         ECEF(Point3::new(x, y, z))
     }
 }
@@ -242,6 +242,12 @@ mod tests {
         close(a.x(), b.x(), 0.000001);
         close(a.y(), b.y(), 0.000001);
         close(a.z(), b.z(), 0.000001);
+    }
+
+    #[test]
+    fn const_ecef_construction() {
+        const OSLO: ECEF<f64> = ECEF::new(3145735.0, 597236.0, 5497690.0);
+        let _ = OSLO;
     }
 
     quickcheck! {

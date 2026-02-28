@@ -15,7 +15,7 @@ pub struct NED<N: RealFieldCopy>(Vector3<N>);
 
 impl<N: RealFieldCopy> NED<N> {
     /// Create a new NED vector
-    pub fn new(n: N, e: N, d: N) -> NED<N> {
+    pub const fn new(n: N, e: N, d: N) -> NED<N> {
         NED(Vector3::new(n, e, d))
     }
 
@@ -111,6 +111,12 @@ impl<N: RealFieldCopy> Access<Vector3<N>> for NED<N> {
 mod tests {
     use super::*;
     use crate::enu::ENU;
+
+    #[test]
+    fn const_ned_construction() {
+        const VEC: NED<f64> = NED::new(1.0, 2.0, 3.0);
+        let _ = VEC;
+    }
 
     quickcheck! {
         fn create_ned(n: f32, e: f32, d: f32) -> () {
