@@ -20,7 +20,7 @@ pub struct ENU<N: RealFieldCopy>(Vector3<N>);
 
 impl<N: RealFieldCopy> ENU<N> {
     /// Create a new ENU vector
-    pub fn new(e: N, n: N, u: N) -> ENU<N> {
+    pub const fn new(e: N, n: N, u: N) -> ENU<N> {
         ENU(Vector3::new(e, n, u))
     }
 
@@ -117,6 +117,12 @@ impl<N: RealFieldCopy> Access<Vector3<N>> for ENU<N> {
 mod tests {
     use super::*;
     use crate::ned::NED;
+
+    #[test]
+    fn const_enu_construction() {
+        const VEC: ENU<f64> = ENU::new(1.0, 2.0, 3.0);
+        let _ = VEC;
+    }
 
     quickcheck! {
         fn create_enu(e: f32, n: f32, u: f32) -> () {
