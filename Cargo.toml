@@ -13,7 +13,7 @@ keywords = ["nav", "navigation", "ecef", "latitude", "wgs84"]
 license = "MIT"
 
 [dependencies]
-nalgebra = { version = "0.32", default-features = false }
+nalgebra = { version = "0.34.1", default-features = false }
 serde = { version = "1.0.164", default-features = false, optional = true, features = ["serde_derive"] }
 
 [dev-dependencies]
