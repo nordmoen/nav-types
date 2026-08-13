@@ -281,7 +281,7 @@ mod tests {
             let vec_e2 = r_ecef_from_enu * vec_enu.access();
 
             // These should be equivalent:
-            close(vec_e.as_ref(), vec_e2.as_ref(), 0.0000001);
+            close(vec_e.as_ref() as &[f64], vec_e2.as_ref() as &[f64], 0.0000001);
         }
 
         fn add_vector(a: WGS84<f64>, b: WGS84<f64>) -> () {
@@ -336,7 +336,7 @@ mod tests {
 
             let ecef_2 = ecef + enu;
             let enu_2 = ecef_2 - ecef;
-            close(enu.access().as_ref(), enu_2.access().as_ref(), 0.0000001);
+            close(enu.access().as_ref() as &[f64], enu_2.access().as_ref() as &[f64], 0.0000001);
         }
     }
 }

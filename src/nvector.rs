@@ -116,7 +116,7 @@ mod tests {
             let test = NVector::from(ECEF::from(wgs));
 
             close(ans.altitude(), test.altitude(), 0.000001);
-            close(ans.vector().as_ref(), test.vector().as_ref(), 0.000001)
+            close(ans.vector().as_ref() as &[f64], test.vector().as_ref() as &[f64], 0.000001)
         }
     }
 }
