@@ -47,6 +47,7 @@ extern crate quickcheck;
 #[cfg(test)]
 extern crate assert;
 
+mod aer;
 mod ecef;
 mod enu;
 mod ned;
@@ -54,11 +55,12 @@ mod nvector;
 mod utils;
 mod wgs84;
 
-pub use self::utils::RealFieldCopy;
+pub use self::aer::AER;
 pub use self::ecef::ECEF;
 pub use self::enu::ENU;
 pub use self::ned::NED;
 pub use self::nvector::NVector;
+pub use self::utils::RealFieldCopy;
 pub use self::wgs84::WGS84;
 
 // This is a private trait to access the underlying structure, this is used
